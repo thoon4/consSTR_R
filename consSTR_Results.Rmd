@@ -1,0 +1,3457 @@
+---
+title: 'Memory consolidation promotes structured representation of visual objects'
+author:
+  - name: "Taehoon Kim, Halim Jang, Seonhwa Park, Ghootae Kim"
+    affiliation: "Deep Memory Lab, Cognitive Science Research Group, Korea Brain Research Institute"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    code_folding: hide
+    highlight: tango
+    number_sections: true
+    theme: cosmo
+    toc: true
+    toc_depth: 5
+    toc_float:
+      collapse: false
+      smooth_scroll: false
+  pdf_document:
+    toc: true
+    toc_depth: 5
+subtitle: Memory consolidation & Structured Representation - 10mm roi version, lr anova
+mainfont: Noto Sans CJK K
+editor_options: 
+  chunk_output_type: console
+---
+
+<br><br>
+
+# Abstract
+
+<br>
+
+Although objects in our daily experiences have high complexity, we recognize them easily. For this efficient object recognition, our brain needs to represent structures of visual objects: the brain needs to parse objects into essential constituents and identify their relationships. How does the brain represent structures? Based on memory consolidation theories, we tested a hypothesis that the visual cortex gets to represent structures of visual objects through a consolidation period using an fMRI study. In the first phase, participants were exposed to syllables made of a combination of two different artificial letters (GA = G +A, DO = D + O). In the second session, LOC activation patterns were recorded while participants were exposed to new syllables made of a novel combination of the familiar letters (GO, DA). Lastly, we collected LOC activation patterns of the individual letters (O, G, D, A). Crucially, there was a week delay between the first and the second phases for the consolidation condition, while the control condition had no such delay. Consistent with our hypothesis, we found a greater LOC activation level for the syllables of the consolidation vs. the control condition. More importantly, activation patterns for syllables of the consolidation condition were better explained by the patterns of their constituent letters compared to the control condition. These results support the hypothesis that the visual cortex figures out structures of visual objects through a consolidation process. More interestingly, our study suggests that the structured representation is the basis of efficient comprehension of novel experiences.
+
+<Br>
+
+Keywords: Structured representation, object recognition, memory consolidation, fMRI
+
+<br>
+
+***
+
+<br>
+
+# Results
+
+<br>
+
+```{r, echo=FALSE}
+rm(list=ls())
+#getwd()
+setwd("/Users/taehoonkim/Desktop/Workspace/git_project/consSTR_R_raw/")
+options(scipen=4)
+```
+
+```{css, echo=FALSE}
+pre code, pre, code {
+  white-space: pre !important;
+  overflow-x: scroll !important;
+  word-break: keep-all !important;
+  word-wrap: initial !important;
+}
+```
+
+
+```{r setup, message=FALSE}
+set.seed(12345) # for reproducibility
+options(knitr.kable.NA = '')
+
+# install // load packages 
+# Some packages need to be loaded. 
+# We use `pacman` as a package manager, which takes care of the other packages. 
+if (!require("distill", quietly = TRUE)) install.packages("distill")
+if (!require("devtools", quietly = TRUE)) install.packages("devtools")
+if (!require("papaja", quietly = TRUE)) devtools::install_github("crsh/papaja")
+if (!require("patchwork", quietly = TRUE)) devtools::install_github("thomasp85/patchwork")
+if (!require("klippy", quietly = TRUE)) devtools::install_github("RLesur/klippy")
+if (!require("pacman", quietly = TRUE)) install.packages("pacman")
+if (!require("Rmisc", quietly = TRUE)) install.packages("Rmisc")
+if (!require("rstatix", quietly = TRUE)) install.packages("rstatix")
+if (!require("effsize", quietly = TRUE)) install.packages("effsize")
+if (!require("lsr", quietly = TRUE)) install.packages("lsr")
+if (!require("effectsize", quietly = TRUE)) install.packages("effectsize")
+if (!require("ggbeeswarm", quietly = TRUE)) install.packages("ggbeeswarm") # Never load it directly.
+pacman::p_load(tidyverse, papaja, knitr, dplyr, car, psych, afex, lme4, lmerTest, 
+               emmeans, ggplot2, ggpubr, lattice, latticeExtra, parallel, 
+               effects, psycho, caret, sjPlot, ppcor, rstatix)
+library("patchwork"); library("klippy")
+klippy::klippy()
+```
+  
+<br>
+
+**참가자**. 인근 지역 대학에서 모집된 정상 시력의 성인 26명이 연구에 참여하였다. 2명의 참가자가 실험 도중 취소로 인해 제외되어 24명의 참가자(13명 여성, 오른손잡이, 연령 M = 23.83, SD = 3.31)의 데이터가 분석에 포함되었다.
+
+<br>
+
+**물체 자극**. 본 연구에서는 물체에 대한 구조적 지식을 추출하는 통합 과정을 통해 새로운 객체의 구조화된 표상이 촉진되는지 여부를 검증하고자 하였다. Consolidation을 통한 새로운 지식 형성에 의한 구조화된 표상의 효과를 검증하기 위해서는 사전 지식이 없는 낯선 물체들을 사용해야 한다. 또한 구조화된 표상의 형성을 살펴보기 위해서는 대상 물체 자극이 대상을 구성하는 구성요소로 명확하게 분해될 수 있어야 한다. 따라서 [옴니글롯의 인공문자/알파벳](https://omniglot.com/)을 참고하여 참가자들에게 친숙하지 않은 요소 자극들을 구성하였다. 그리고 이러한 요소 자극을 조합하여 대상 자극을 생성하였다.
+
+<br>
+
+이러한 작업을 통해 5개의 요소 범주, 각 범주 내 12개의 요소 자극이 구성되었다. 물체 자극은 각 범주의 12개 요소들을 2개씩 조합하여 구성하였다. 구체적으로 두 개의 요소 자극을 수평적으로 결합하여 하나의 물체처럼 보이게 하여 조합을 생성하였으며, 하나의 오브젝트를 구성하는 요소들이 서로 겹치지 않도록 하였다. 이를 통해 각 범주 내에서 12개의 요소로 총 66개의 대상 물체 자극(12C2)을 생성하였다. 5개 범주 중 4개는 행동 학습 과제 및 fMRI 스캔 단계의 신경 패턴 측정에서 대상 범주로 사용되었으며 나머지는 스캔 단계에서 1-백 캐치 시도에 대한 물체 자극으로 활용되었다.
+
+<br>
+
+목표 자극 범주 4개 각각에서 요소의 결합을 만들어진 66개의 물체 자극은 33개씩 구분되어 2개의 자극 세트를 구성하였다 두 자극 세트에 할당된 물체 자극들의 정체성은 서로 달랐으나, 물체를 구성하는 각 요소 자극은 5번 또는 6번씩 나누어져 유사하게 등장하도록 설정하였다. 예를 들어, 1번 요소를 기준으로, 1번 요소와 2~12번 요소들이 각각 결합하여 총 11개의 물체 자극이 만들어질 수 있다. 이 중 1번 요소가세트 1에5개, 세트 2에 6개가 할당되어 각 세트에서 요소들이 노출되는 빈도를 유사하게 맞추었다. 유사하게 2번 요소에서도 11개의 물체 자극이 구성되며 11개의 물체 자극도 세트 1에 6개, 세트 2에 5개를 할당하여 요소들이 노출되는 빈도를 유사하게 맞추었다. 이 때, 1번 요소와 2번 요소가 결합되어 생성된 물체 자극이 각 세트 내에 이미 존재할 수 있으며, 이 경우 이 자극이 어떤 세트에 미리 할당되었는지를 고려하여 새로운 자극을 할당하였다. 이러한 과정을 통해 12 개 요소 중 1번 세트에서 총 5번씩 노출되는 요소가 6개, 6번씩 노출되는 요소가 6개 있도록 물체 자극을 할당하였으며, 어떤 요소가 각 세트에 몇 번씩 할당되는지는 전체 참가자에 걸쳐 무선화되었다. 결과적으로 목표 범주인 4개 물체 범주 자극에서 각각 33개의 물체로 이루어진 2개의 자극 세트(세트 1과 세트 2)가 만들어졌다.
+
+<br>
+
+![](/Users/taehoonkim/Desktop/Workspace/git_project/consSTR_R_raw/image/Stimuli.png)
+
+
+<br>
+
+**실험 절차**. 실험은 2개의 공고화 조건(Consolidated vs. Immediate)을 요인으로 한 Within-subject Design으로 진행하였다. Consolidation의 효과를 검증하기 위한 일반적인 실험 패러다임을 따라 5일 간격으로 2일에 걸쳐 진행하였다. 
+
+<br>
+
+절차는 아래 그림과 같다: Session 1 - 1st learning (행동, Objects, Consolidated); Session 2 - 1st learning (행동, Objects, Immediate), 2nd learning (In scanner, New objects, Consolidated & Immediate), Snapshot (In scanner, Constituents, Consolidated & Immediate) 단계, LOC localizer (In scanner, Object vs. Scrambled)
+
+<br>
+
+![](/Users/taehoonkim/Desktop/Workspace/git_project/consSTR_R_raw/image/Procedure.png)
+
+<br>
+
+## Behavioral Results
+
+<br>
+
+1일차 1st learing과 2일차 1st learning은 할당된 물체 자극을 제외하고는 동일한 절차로 수행되었다. 1일차 학습이 진행된 후 5일이 지난 뒤 2일차 학습 및 스캔 단계가 진행하여 1일차에 학습한 물체들이 충분히 공고화 될 수 있도록 유도하고자 하였다. 학습의 목적은 참가자들에게 각 범주의 물체 자극들을 반복적으로 노출시켜 물체 자극들에 대해 친숙해지도록 하는 것이었다. 이를 통해 물체들을 이루는 요소와 그 요소들 간의 결합 관계를 자연스럽게 학습할 수 있도록 하고, 그 과정이 휴지기의 유무에 따라 달라지는지 검증하여 공고화의 효과를 확인하고자 하였다.
+
+<br>
+
+두 학습 단계에서 자극 할당은 다음과 같이 이루어졌다. 참가자 내에서 공고화 조건을 조작하기 위해 4개의 물체 범주 자극을 2개씩 구분하였다. 그리고 2개씩 구분된 범주 각각에서 첫 번째 자극 세트(물체 33개)를 1일차 및 2일차 학습 단계에 각각 할당하였다. 예를 들어, 1일차 학습 단계에 1번과 2번 자극 범주의 첫 번째 세트(물체 33개)가 할당됨에 따라 총 66개의 1일차 물체 자극이 구성되었다. 2일차 학습 단계에는 동일하게 3번과 4번 자극 범주의 첫 번째 세트가 할당되어 66개의 2일차 물체 자극이 구성되었다. 결과적으로 Consolidated 조건의 물체 범주 자극과 Immediate 조건의 물체 범주 자극이 구성되었다. 각 일차에 어떤 자극 범주들이 할당되는지는 참가자에 걸쳐 역균형화 하였다. 
+
+<br>
+
+참가자들이 물체와 범주를 주의 깊게 학습하고, 충분히 친숙해질 수 있도록 하기 위해 피드백 기반 범주 판단 과제를 5번 반복 수행하였다. 구체적으로, 66개의 물체를 하나씩 보면서 이 물체가 해당 일차에 할당된 두 가지 범주 중 어떤 범주에 속하는지 구분하도록 하였다.
+
+<br>
+
+각 시행은 0.5초의 응시점으로 시작하였다. 이어서 물체 자극 1개와 범주를 지칭하는 선택지 2개를 4초간 제시되었고 참가자는 4초의 시간 내에서 해당 물체가 어떤 범주에 속하는지 판단하였다. 4초가 모두 지나면 참가자의 반응이 맞았는지 틀렸는지 여부와 해당 물체가 실제로 어떤 범주에 속하는지를 1.5초간 피드백으로 제공되었다. 0.5초의 빈 화면 이후 다음 시행 시작되었다.
+
+<br>
+
+이러한 절차로 2개 범주의 66개의 물체를 보여주어 66개의 시행이 구성되었으며, 참가자들은 이 과제를 총 5번 반복 수행하였다. 결과적으로, 66개의 물체에 대한 범주 판단을 총 5 블록으로 반복 수행되었다. 블록 간 휴식 시간 부여되었으며 모든 절차에는 약 1시간의 시간이 소요되었다. 참가자들이 각 범주와 물체를 잘 학습하였는지 확인하기위해 참가자들의 범주 판단 정확률과 반응 시간을 측정하였다.
+
+<br>
+
+### Feedback-based Learning - Session 1 & 2
+
+<br>
+
+```{r, collapse=TRUE}
+b1d1 <- read.csv("data/b1d1_v1.csv", header = T)
+b1d2 <- read.csv("data/b1d2_v1.csv", header = T)
+
+b1 <- rbind(b1d1, b1d2)
+
+# check number of trials for each condition/sn
+table(b1$sn)
+table(b1$cL_num, b1$sn) 
+
+# change class of main factors: double to factor
+b1$sn = factor(b1$sn)
+b1$task = factor(b1$task)
+b1$cCons = factor(b1$cCons, levels=c(1,2), labels=c("cons","imm"))
+b1$cL_num = factor(b1$cL_num)
+b1$cL_num = factor(b1$cL_num)
+b1$dIm_Name = factor(b1$dIm_Name)
+b1$dComp1 = factor(b1$dComp1)
+b1$dComp2 = factor(b1$dComp2)
+b1$dCorr <- as.numeric(b1$dCorr==1)
+
+b1 <- b1 %>% dplyr::select(sn, task, blk, cCons, cL_num, cL_num, cSet, dIm_Name, dComp1, dComp2, cCat, dResp, dRt, dCorr) 
+
+headTail(b1)
+glimpse(b1, width = 70)
+length(unique(b1$sn))
+
+```
+
+<br>
+
+#### RT analysis
+
+<br>
+
+1일차 1st learing과 2일차 1st learning에서 참가자 들의 반복 학습에 따라 반응 시간이 빨라지는지 분석하였다. 분석에는 올바르게 반응한 시행만 포함되었다. 자동적 반응(<200ms)과 과도하게 늦은 반응(>10000ms)을 제거하였고, 평균으로부터 +-3SD를 넘는 시행을 가외치로 판단하여 제거하였다. 아래에 두 조건과 블록 반복에 따른 반응시간 변화를 요약하였다.
+
+<br>
+  
+```{r, collapse=TRUE}
+cb1 <- b1 %>% filter(dCorr == 1) # filter(dCorr == 1) # remove incorrect trial
+
+# check accuracy
+100-100*(nrow(cb1)/nrow(b1))
+# 0.00% indCorrect trials were not analyzed
+
+# trimming 3sd outlier trials
+tb1 <- cb1
+tb1 <- cb1 %>% filter(dRt > .200 & dRt < 10.000) %>%
+  group_by(sn) %>% # grouping by padRticipants
+  nest() %>%
+  mutate(lbound = map(data, ~mean(.$dRt)-3*sd(.$dRt)),
+         ubound = map(data, ~mean(.$dRt)+3*sd(.$dRt))) %>% # make new data (3sd cut)
+  unnest(c(lbound, ubound))%>% 
+  unnest(data) %>% 
+  mutate(Outlier = (dRt < lbound)|(dRt > ubound)) %>% # set outlier
+  filter(Outlier == FALSE) %>% # filtering outlier
+  ungroup() %>% 
+  dplyr::select(sn, task, blk, cCons, cL_num, cL_num, cSet, dIm_Name, dComp1, dComp2, cCat, dResp, dRt, dCorr) # select variables to analyze
+
+# outlier trial ratio
+100-100*(nrow(tb1)/nrow(cb1))
+
+# mean number of trials for each conditions
+tb1 %>% group_by(sn, cCons, cL_num) %>%
+  dplyr::summarise(NumTrial = length(dRt)) %>%
+  ungroup() %>%
+  group_by(cCons, cL_num) %>%
+  dplyr::summarise(Mean = mean(NumTrial),
+            Median = median(NumTrial),
+            Min = min(NumTrial),
+            Max = max(NumTrial)) %>%
+  ungroup %>%
+  kable(digits=2)
+
+# check Distribution
+
+# before trimming
+den1 <- ggplot(cb1, aes(x=dRt)) +
+  geom_density() +
+  theme_bw(base_size = 18) +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank())
+
+# after trimming
+den2 <- ggplot(tb1, aes(x=dRt)) +
+  geom_density() +
+  theme_bw(base_size = 18) +
+  labs(x = "Trimmed dRt") +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank())
+den1 + den2
+
+# subject-level, long format
+b1dRtL <- tb1 %>% group_by(sn, cCons, blk) %>%
+  dplyr::summarise(dRt = mean(dRt)) %>%
+  ungroup()
+# b1dRtL %>% kable(digits=2)
+
+# subject-level, wide format (sn/Btw/cL_num)
+b1dRtW <- b1dRtL %>% spread(key=cCons, value = dRt)
+# b1dRtW %>% kable(digits=2)
+
+# summary table: grand mean (eyerep/locrep)
+b1dRtG <- b1dRtL %>% group_by(cCons, blk) %>%
+  dplyr::summarise(dRt.m = mean(dRt), dRt.sd = sd(dRt)) %>%
+  ungroup()
+b1dRtG$dRt.se <- Rmisc::summarySEwithin(data = b1dRtL, measurevar = "dRt", 
+                                      idvar = "sn", withinvars = c("cCons", "blk"))$se
+b1dRtG$dRt.ci <- Rmisc::summarySEwithin(data = b1dRtL, measurevar = "dRt", 
+                                      idvar = "sn", withinvars = c("cCons", "blk"))$ci
+b1dRtG <- b1dRtG %>% 
+  mutate(lower.ci = dRt.m-dRt.ci,
+         upper.ci = dRt.m+dRt.ci)
+b1dRtG %>% dplyr::select(cCons, blk, dRt.m) %>% 
+  spread(key=blk, value=dRt.m) %>% kable(digits=2)
+
+b1dRtG %>% kable(digits=2)
+
+```
+
+#### Accuracy analysis
+
+<br>
+
+1일차 1st learing과 2일차 1st learning에서 참가자 들의 반복 학습에 따라 정확도가 향상되는지 분석하였다. 아래에 두 조건과 블록 반복에 따른 정확도 변화를 요약하였다.
+
+<br>
+  
+```{r, collapse=TRUE}
+b1acc.sn <- b1 %>% filter(blk>=4) %>%  group_by(sn) %>%
+  dplyr::summarise(Acc = mean(dCorr)*100) %>%
+  ungroup()
+# b1acc.sn %>% spread(sn, Acc) %>% kable(digits=2)
+
+# subject-level, long format (sn/Btw/cL_num)
+b1accL <- b1 %>% group_by(sn, blk, cCons) %>%
+  dplyr::summarise(Acc = mean(dCorr)*100) %>%
+  ungroup()
+# b1accL %>% kable(digits=2)
+
+# subject-level, wide format (sn/Btw/cL_num)
+b1accW1 <- b1accL %>% spread(key=cCons, value = Acc)
+# b1accW1 %>% kable(digits=2)
+
+# summary table: grand mean (eyerep/locrep)
+b1accG <- b1accL %>% group_by(cCons, blk) %>%
+  dplyr::summarise(Acc.m = mean(Acc), Acc.sd = sd(Acc)) %>%
+  ungroup()
+b1accG$Acc.se <- Rmisc::summarySEwithin(data = b1accL, measurevar = "Acc", 
+                                        idvar = "sn", withinvars = c("cCons","blk"))$se
+b1accG$Acc.ci <- Rmisc::summarySEwithin(data = b1accL, measurevar = "Acc", 
+                                        idvar = "sn", withinvars = c("cCons","blk"))$ci
+b1accG <- b1accG %>% 
+  mutate(lower.ci = Acc.m-Acc.ci,
+         upper.ci = Acc.m+Acc.ci)
+# for between-subject design. check help(summarySE)
+b1accG %>% dplyr::select(cCons, blk, Acc.m) %>% 
+  spread(key=blk, value=Acc.m) %>% 
+  kable(digits=2)
+
+b1accG %>% kable(digits=2)
+
+```
+
+<br>
+
+#### Plot
+
+<Br>
+
+두 조건의 블록 반복에 따른 반응 시간 & 정확도 변화를 그래프로 나타내었다. 두 조건 모두 블록 반복에 따라 학습이 잘 진행되어 반응 시간이 빨라지고 정확도가 향상되었다. 마지막 블록에서 두 조건 간 차이는 관찰되지 않았다. 
+
+<br>
+
+```{r, fig.width= 14, fig.height=6}
+# values = c("#F17402", "#2C57AA") 
+# values = c("darkred", "darkblue")
+b1.dRt.plot0 <- ggplot(b1dRtG, mapping=aes(x=blk, y=dRt.m, group=cCons)) + 
+  geom_ribbon(b1dRtG, mapping=aes(ymin=lower.ci, ymax=upper.ci, fill=cCons), alpha=0.3) +
+  geom_line(b1dRtG, mapping=aes(x=blk, y=dRt.m, colour=cCons), size = 2, show.legend = F) +
+  scale_fill_manual(values = c("#F17402", "#2C57AA"), labels = c("Consolidated","Immediate")) +
+  scale_color_manual(values = c("#F17402", "#2C57AA")) +  # "#feb24c", "#91bfdb"
+  coord_cartesian(ylim = c(1, 2), clip = "on") +
+  labs(x = "Block", y = "Response Time (s)", fill="Condition") +
+  theme_bw(base_size = 18) +
+  theme(axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        # strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="top")
+
+
+b1.acc.plot0 <- ggplot(b1accG, mapping=aes(x=blk, y=Acc.m, group=cCons)) + 
+  geom_ribbon(b1accG, mapping=aes(ymin=lower.ci, ymax=upper.ci, fill=cCons), alpha=0.3) +
+  geom_line(b1accG, mapping=aes(x=blk, y=Acc.m, colour=cCons), size = 2, show.legend = F) +
+  scale_fill_manual(values = c("#F17402", "#2C57AA"), labels = c("Consolidated","Immediate")) +
+  scale_color_manual(values = c("#F17402", "#2C57AA")) +  # "#feb24c", "#91bfdb"
+  coord_cartesian(ylim = c(50, 100), clip = "on") +
+  labs(x = "Block", y = "Accuracy (%)", fill="Condition") +
+  theme_bw(base_size = 18) +
+  theme(axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        # strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="top")
+# b1.acc.plot0
+fig1_1.behav <- ggarrange(b1.dRt.plot0, b1.acc.plot0)
+fig1_1.behav
+
+# plot-control 1
+#ggsave("s.fig.1.jpg", plot = fig1_1.behav, width=8, height=5, unit='in', dpi=600)
+
+```
+
+<br>
+
+```{r, fig.width= 14, fig.height=6}
+# values = c("#E1812B", "#3173A1")
+b1dRtL.1 <- b1dRtL %>% filter(blk==5)
+b1dRtG.1 <- b1dRtG %>% filter(blk==5)
+b1dRtW.1 <- b1dRtW %>% filter(blk==5)
+
+b1.dRt.plot0.1 <- ggplot(data=b1dRtL.1, aes(x=cCons, y=dRt, fill=cCons)) +
+  stat_summary(fun = mean, geom = "bar", position="dodge", na.rm = TRUE, alpha = .9, 
+               width = 0.8, size = 0.3, color='black') + # , show.legend = FALSE, colour="black", 
+  # geom_pointrange(data=b1dRtG.1, aes(x = cCons, y=dRt.m, ymin = dRt.m-dRt.ci, ymax = dRt.m+dRt.ci),
+  #                 position = position_dodge(0.80), color = "darkred", size = 1, show.legend = FALSE) +
+  geom_segment(data=filter(b1dRtW.1), inherit.aes = FALSE,
+               aes(x=1, y=filter(b1dRtW.1)$cons,
+                   xend=2, yend=filter(b1dRtW.1)$imm),
+               color="gray90", alpha = .7) +
+  geom_point(data=b1dRtL.1, aes(x=cCons, y=dRt, fill=cCons), 
+             position=position_dodge(width = 0.8), 
+             size=2, show.legend = FALSE, color="gray80") + # , 
+  geom_errorbar(data=b1dRtG.1, aes(x=cCons, y=dRt.m, ymin=lower.ci, ymax=upper.ci), width=.2,
+                position=position_dodge(.8), color = "black") +
+  scale_x_discrete(labels=c("Consolidated", "Immediate")) +
+  scale_fill_manual(values = c("#F17402", "#2C57AA"),
+                    labels = c("Consolidated", "Immediate")) +
+  coord_cartesian(ylim = c(0, 3), clip = "on") +
+  labs(x = "Condition", y = "Block 5 Response Time (s)", fill ="Condition") +
+  theme_bw(base_size = 18) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        # strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="top")
+# b1.dRt.plot0.1
+
+b1accL.1 <- b1accL %>% filter(blk==5)
+b1accG.1 <- b1accG %>% filter(blk==5)
+b1accW1.1 <- b1accW1 %>% filter(blk==5)
+b1.acc.plot0.1 <- ggplot(data=b1accL.1, aes(x=cCons, y=Acc, fill=cCons)) +
+  stat_summary(fun = mean, geom = "bar", position="dodge", na.rm = TRUE, alpha = .9, 
+               width = 0.8, size = 0.3, color='black') + 
+  geom_segment(data=filter(b1accW1.1), inherit.aes = FALSE,
+               aes(x=1, y=filter(b1accW1.1)$cons,
+                   xend=2, yend=filter(b1accW1.1)$imm),
+               color="gray90", alpha = .7) +
+  geom_point(data=b1accL.1, aes(x=cCons, y=Acc, fill=cCons), 
+             position=position_dodge(width = 0.8), 
+             size=2, show.legend = FALSE, color="gray80") + # , 
+  geom_errorbar(data=b1accG.1, aes(x=cCons, y=Acc.m, ymin=lower.ci, ymax=upper.ci), width=.2,
+                position=position_dodge(.8), color = "black") +
+  scale_x_discrete(labels=c("Consolidated", "Immediate")) +
+  scale_fill_manual(values = c("#F17402", "#2C57AA"),
+                    labels = c("Consolidated", "Immediate")) +
+  coord_cartesian(ylim = c(25, 100), clip = "on") +
+  labs(x = "Condition", y = "Block 5 Accuracy (s)", fill ="Condition") +
+  theme_bw(base_size = 18) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        # strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="top")
+# b1.acc.plot0.1
+
+fig1_2.behav <- ggarrange(b1.dRt.plot0.1, b1.acc.plot0.1)
+fig1_2.behav
+
+
+# plot-control 2
+# ggsave("s.fig.2.jpg", plot = fig1_2.behav, width=8, height=5, unit='in', dpi=600)
+
+
+
+```
+
+<br>
+
+#### Statistic Inference
+
+<br>
+
+두 조건의 블록 반복에 따른 반응 시간 & 정확도 변화를 통계 분석 하였다. 
+
+<br>
+
+##### RT ANOVA
+
+<br>
+
+마지막 블록에서 두 조건 간 반응 시간 차이는 유의하지 않았다.
+
+<br>
+
+```{r, echo=T}
+b1dRtL.tmp <- b1dRtL %>% filter(blk == 5)
+b1dRt.aov1 <- aov_ez(id="sn", dv="dRt", data = b1dRtL.tmp, within = c("cCons"))
+# summary(r1.aov1)
+nice(b1dRt.aov1, es="pes") %>% kable(digits=2)
+```
+
+<br>
+
+```{r, echo=T}
+b1dRt.aov1.m1 <- emmeans(b1dRt.aov1 , pairwise ~ cCons, adjust = "bon", infer = c(TRUE, TRUE)) # adjust="bon" , "tukey", "none"
+a = summary(b1dRt.aov1.m1$contrasts)
+b = t_to_d(t= a$t.ratio, df_error = a$df, paired = T) %>% dplyr::select(d)
+cbind(a,b) %>% dplyr::select(contrast, estimate, lower.CL, upper.CL, df, t.ratio, p.value, d) %>% kable(digits=3)
+
+p_h1 <- b1dRtL.tmp %>% rstatix::pairwise_t_test(dRt ~ cCons, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- b1dRtL.tmp %>% rstatix::cohens_d(dRt ~ cCons, paired=T, ci = ) %>% 
+  dplyr::select(group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("group1", "group2")) %>% kable(digits=3)
+```
+
+<br>
+
+##### Accuracy ANOVA
+
+<br>
+
+마지막 블록에서 두 조건 간 정확도 차이는 유의하지 않았다.
+
+<br>
+
+```{r, echo=T}
+b1accL.tmp <- b1accL %>% filter(blk == 5)
+b1acc.aov1 <- aov_ez(id="sn", dv="Acc", data = b1accL.tmp, within = c("cCons"))
+# summary(r1.aov1)
+nice(b1acc.aov1, es="pes") %>% kable(digits=2)
+```
+
+<br>
+
+```{r, echo=T}
+b1acc.aov1.m1 <- emmeans(b1acc.aov1, pairwise ~ cCons, adjust = "bon", infer = c(TRUE, TRUE)) # adjust="bon" , "tukey", "none"
+a = summary(b1acc.aov1.m1$contrasts)
+b = t_to_d(t= a$t.ratio, df_error = a$df, paired = T) %>% dplyr::select(d)
+cbind(a,b) %>% dplyr::select(contrast, estimate, lower.CL, upper.CL, df, t.ratio, p.value, d) %>% kable(digits=3)
+
+p_h1 <- b1accL.tmp%>% rstatix::pairwise_t_test(Acc ~ cCons, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- b1accL.tmp %>% rstatix::cohens_d(Acc ~ cCons, paired=T, ci = F) %>% 
+  dplyr::select(group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("group1", "group2")) %>% kable(digits=3)
+```
+
+<br>
+
+##### Category Accuracy
+
+<Br>
+
+본 실험에는 4개의 물체 범주가 사용되었다. 마지막 블록에서 물체 범주 간 학습 차이가 있는지 확인하기 위한 분석을 수행하였다. 
+
+<br>
+
+```{r, collapse=TRUE}
+b1acc.sn <- b1 %>% filter(blk==5) %>%  group_by(sn, cL_num) %>%
+  dplyr::summarise(Acc = mean(dCorr)*100) %>%
+  ungroup()
+# b1acc.sn %>% spread(cL_num, Acc) %>% kable(digits=2)
+
+# subject-level, long format (sn/Btw/cL_num)
+b1accL <- b1 %>% group_by(sn, blk, cL_num) %>%
+  dplyr::summarise(Acc = mean(dCorr)*100) %>%
+  ungroup()
+# b1accL %>% kable(digits=2)
+
+# subject-level, wide format (sn/Btw/cL_num)
+b1accW1 <- b1accL %>% spread(key=cL_num, value = Acc)
+# b1accW1 %>% kable(digits=2)
+
+# summary table: grand mean (eyerep/locrep)
+b1accG <- b1accL %>% group_by(cL_num, blk) %>%
+  dplyr::summarise(Acc.m = mean(Acc), Acc.sd = sd(Acc)) %>%
+  ungroup()
+b1accG$Acc.se <- Rmisc::summarySEwithin(data = b1accL, measurevar = "Acc", 
+                                        idvar = "sn", withinvars = c("cL_num","blk"))$se
+b1accG$Acc.ci <- Rmisc::summarySEwithin(data = b1accL, measurevar = "Acc", 
+                                        idvar = "sn", withinvars = c("cL_num","blk"))$ci
+b1accG <- b1accG %>% 
+  mutate(lower.ci = Acc.m-Acc.ci,
+         upper.ci = Acc.m+Acc.ci)
+# for between-subject design. check help(summarySE)
+b1accG %>% dplyr::select(cL_num, blk, Acc.m) %>% 
+  spread(key=blk, value=Acc.m) %>% 
+  kable(digits=2)
+```
+
+<br>
+
+물체 범주 3이 다른 범주들보다 요약치 상에서 더 우수한 정확도를 보이긴 했으나 통계적 차이는 유의하지 않았다. 따라서 본 실험의 결과에 물체 범주 간 차이가 큰 영향을 줄 가능성은 적어보인다. 
+
+<br>
+
+```{r, fig.width= 14, fig.height=6}
+b1accL.1 <- b1accL %>% filter(blk==5)
+b1accG.1 <- b1accG %>% filter(blk==5)
+b1accW1.1 <- b1accW1 %>% filter(blk==5)
+b1.acc.plot0.1 <- ggplot(data=b1accL.1, aes(x=cL_num, y=Acc, fill=cL_num)) +
+  stat_summary(fun = mean, geom = "bar", position="dodge", na.rm = TRUE, alpha = .9, 
+               width = 0.8, size = 0.3, color='black') + # , show.legend = FALSE, colour="black", 
+  geom_point(data=b1accL.1, aes(x=cL_num, y=Acc, fill=cL_num), 
+             position=position_dodge(width = 0.8), 
+             size=2, show.legend = FALSE, color="gray80") + # , 
+  geom_errorbar(data=b1accG.1, aes(x=cL_num, y=Acc.m, ymin=lower.ci, ymax=upper.ci), width=.2,
+                position=position_dodge(.8), color = "black") +
+  # geom_pointrange(data=b1accG.1, aes(x = cL_num, y=Acc.m, ymin = lower.ci, ymax = upper.ci),
+  #                 position = position_dodge(0.80), color = "darkred", size = 1, show.legend = FALSE) +
+  scale_x_discrete(labels=c("L1", "L2","L3", "L4")) +
+  scale_fill_manual(values = c("#D99694", "#FAC090", "#C3D69B", "#93CDDD"),
+                    labels = c("L1", "L2","L3", "L4")) +
+  coord_cartesian(ylim = c(25, 100), clip = "on") +
+  labs(x = "Language", y = "Block 5 Accuracy (s)", fill ="Language") +
+  theme_bw(base_size = 18) +
+  theme(axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        # strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="top")
+b1.acc.plot0.1
+```
+
+<br>
+
+```{r, echo=T}
+b1accL.tmp <- b1accL %>% filter(blk == 5)
+b1acc.aov1 <- aov_ez(id="sn", dv="Acc", data = b1accL.tmp, within = c("cL_num"))
+# summary(r1.aov1)
+nice(b1acc.aov1, es="pes") %>% kable(digits=2)
+```
+
+<br>
+
+```{r, echo=T}
+b1acc.aov1.m1 <- emmeans(b1acc.aov1, pairwise ~ cL_num, adjust = "bon", infer = c(TRUE, TRUE)) # adjust="bon" , "tukey", "none"
+a = summary(b1acc.aov1.m1$contrasts)
+b = t_to_d(t= a$t.ratio, df_error = a$df, paired = T) %>% dplyr::select(d)
+cbind(a,b) %>% dplyr::select(contrast, estimate, lower.CL, upper.CL, df, t.ratio, p.value, d) %>% kable(digits=3)
+
+p_h1 <- b1accL.tmp%>% rstatix::pairwise_t_test(Acc ~ cL_num, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- b1accL.tmp %>% rstatix::cohens_d(Acc ~ cL_num, paired=T, ci = F) %>% 
+  dplyr::select(group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("group1", "group2")) %>% kable(digits=3)
+```
+
+<br>
+
+****
+
+<br>
+  
+## fMRI Results
+
+<br>
+
+Session 2의 Scan Phase로 2nd Learning, Snapshot, LOC localizer phase가 진행되었다. 
+
+<Br>
+
+**2nd Learning Phase**의 목적은 1일차 및 2일차 학습과 공고화 과정을 걸쳐 이루어진 범주 물체에 대한 학습과 구조적 지식의 획득으로 동일 범주의 새로운 물체들에 대한 구조화된 표상을 할 수 있는지를 측정하고자 하는 것이었다. 이를 위해 2nd Learning Phase에서는 Session 1 & 2에서 학습한 물체들과 구성 요소는 동일하나 새롭게 결합된 New Objects 들이 제시되었다. 여기서 Session 1 1st Learning에서 학습한 물체 범주의 요소로 구성된 New objects는 Consolidated 조건이었고, Session 2 1st Learning에서 학습한 물체 범주의 요소로 구성된 New objects는 Immediate 조건이었다. 각 조건의 물체들은 event-related design과 block design이 결합된 mixed 디자인으로 제시되었다. 전체 과정에서 참가자들의 주의를 유지하기 위해 1-back task가 진행되었다. 단변량 분석을 위해 각 조건의 전반적인 신경 활성화 정도를 측정하였고, 다변량 패턴 분석을 위해 각 조건의 개별 물체에 대한 신경 패턴을 측정하였다.
+
+<Br>
+
+**Snapshot Phase**는 2nd Learning Phase에 제시된 물체들을 구성하는 Consituents 각각의 신경 패턴을 측정하기위해 수행되었다. Consolidated 조건과 Immediate 조건을 이루는 물체들을 구성하는 물체 범주의 요소 자극들이 event-related 디자인으로 제시되었다. 참가자들은 1-back task를 수행하였다. 마찬가지로 각 조건의 전반적인 신경 활성화 정도와 개별 요소들에 대한 신경 패턴을 측정하였다.
+
+<br>
+
+**LOC localizer Phase**의 목적은 물체 선택적 시각 영역인 LOC를 참가자별로 특정하기 위함이었다.  intact 물체과 scrambled 물체가 블록 디자인으로 제시되었으며 참가자들은 1-back task를 수행하였다. 각 조건의 전반적인 신경활성화를 측정 후 조건 간 비교를 통해 시각 피질 내에서 LOC를 참가자별로 특정하였다. 아래의 주요 분석들의 핵심 ROI는 식별된 LOC였다. 
+
+<br>
+
+수집된 fMRI 데이터는 단변량 분석과 다변량 분석을 위한 표준 절차를 통해 전처리되었다. 전처리 과정에 대한 자세한 내용은 생략한다. 전처리된 EPI 데이터는 MNI template brain으로 Registration 되었다. 이에 따라 모든 분석은 Standard Space에서 수행되었다. 
+
+<br>
+
+**Regions of interest**는 물체의 구조화된 표현을 측정하기 위한 물체 선택적 시각 영역, 그리고 Consolidation과 Schema proecess와 관련된 내측두엽 영역, 내측 전두영역으로 설정되었다. 구체적으로, 물체 선택적 시각 영역으로는 앞선 Localizer를 통해 식별된 bilateral LOC가 설정 되었으며, Consolidation & Schema 관련으로는 Freesurfer로 식별된 Anterior - Posterior Hippocampus와 functional connectivity analysis로 식별된 mPFC 영역이 설정되었다. 
+
+<br>
+
+실험의 주요 가설은 아래와 같다. 
+
+![](/Users/taehoonkim/Desktop/Workspace/git_project/consSTR_R_raw/image/Hypothesis.png)
+
+구체적으로, 기존 경험의 Consolidation를 통해 기존 물체에 대한 구조화된 지식이 획득됨에 따라 이와 요소나 결합 관계를 공유하는 새로운 물체에 대한 구조화된 표상이 가능케 될 것으로 예상하였다. 이에 따른 세 가지 하위 가설은 다음과 같다. 
+
+<br>
+
+1) 물체에 대한 구조화된 표상으로 물체를 복합한 잡음 집합이 아닌 구조화된 물체로 지각함에 따른 Objectness 증가, 이에 따른 LOC 신경 반응 증가; 
+
+<br>
+
+2) 물체에 대한 구조화된 표상으로 인해 물체에서 물체를 이루는 구성 요소가 더 뚜렷하게 표상, 이에 따라 물체 표상이 구성 요소의 표상으로 설명되는 정도가 증가; 
+
+<br>
+
+3) 물체에 대한 구조화된 표상으로 물체 범주의 공통된 구성요소와 결합 관계가 더 효과적으로 표상, 이에 따라 동일한 요소와 결합 관계를 공유하는 물체 범주의 물체들간 신경 표상의 유사성이 증가;
+
+<br>
+
+아래에는 이 세 가지 가설을 검증하기 위한 세 가지 분석을 수행한 결과를 나타내었다. 
+
+<Br>
+
+***
+
+<br>
+
+### Results 1 - Univariate Contrast
+
+<br>
+
+첫 번째 가설은 공고화로 대상에 대한 구조적 지식이 획득됨에 따라, 유사한 대상에 대한 구조화된 표상이 촉진되어 대상이 잡음 집합이 아닌 완결된 물체로 지각되는 objectness 가 증가하고, 결과적으로 LOC의 활성화 정도가 증가한다는 것이었다. 이를 검증하기 위해, 2nd learning phase에서 수집된 신경 데이터를 대상으로 Object-selective ROI인 LOC 의 신경 신호가 Consolidated 조건에서 Immediate 조건보다 더 크게 나타나는지 단변량 비교 분석을 수행하였다. 분석의 주요 ROI는 LOC, left LOC, right LOC 였고, 추가로 Posterior Hippocampus, Anterior Hippocampus, mPFC에서도 동일한 분석을 수행하였다. 
+
+<br>
+
+```{r, collapse=TRUE}
+r1p1 <- read.csv("data/r1_p1_sum.csv", header = T)
+r1 <- r1p1
+glimpse(r1, width = 70)
+
+# subj : 참가자 번호
+# cond : condtiion, consolidation vs. immediate
+# roi : 관심 상위 영역. rloc vs. lvwfa
+# z : 활성화 정도를 나타내는 z statistics
+
+r1_l <- r1
+r1_l$subj = factor(r1_l$subj)
+
+# targ_roi<- c("loc", "lloc", "rloc", 
+#              "pf", "lpf", "rpf", 
+#              "lloc31", "rloc31", 
+#              "v1", "v2", "v3", "v4",
+#              "bhpp", "lhpp", "rhpp", "la_hpp", "lp_hpp", 
+#              "ra_hpp", "rp_hpp", "p_hpp", "a_hpp", 
+#              "mpfc")
+targ_roi<- c("loc", "lloc", "rloc", 
+             "p_hpp", "a_hpp", "mpfc")
+
+
+r1_l <- r1_l %>% filter(roi %in% targ_roi)
+# r1_l <- r1_l %>% filter(subj!=99)
+
+r1_l$cond = factor(r1_l$cond, levels=c("cons","imm"),labels=c("cons","imm")) 
+r1_l$roi = factor(r1_l$roi, 
+                  levels=c("loc", "lloc", "rloc", 
+                           "p_hpp", "a_hpp", "mpfc"), 
+                  labels=c("loc", "lloc", "rloc", 
+                           "p_hpp", "a_hpp", "mpfc")) 
+r1_l <- r1_l %>% dplyr::select(subj,roi,cond,z)
+length(unique(r1_l$subj))
+
+# check number of trials for each condition/subj
+table(r1_l$subj)
+table(r1_l$cond, r1_l$subj)
+table(r1_l$roi, r1_l$subj)
+
+```
+
+<br>
+  
+각 ROI 에서 조건에 따른 신경 활성화 정도를 요약하였다.
+  
+<br>  
+  
+```{r, collapse=TRUE}
+# subject-level, long format
+r1_allL <- r1_l %>% group_by(subj, roi, cond) %>%
+  dplyr::summarise(z=mean(z)) %>%
+  ungroup()
+# r1_allL %>% kable(digits=2)
+
+# subject-level, wide format
+r1_allW <- r1_allL %>% spread(key=cond, value = z)
+# r1_allW %>% kable(digits=2)
+
+r1_allW1 <- r1_allL %>% spread(key=roi, value=z)
+# r1_allW1 %>% kable(digits=2)
+
+r1_allW2 <- r1_allL %>% spread(key=cond, value=z)
+# r1_allW2 %>% filter(phase ==1, roi=="loc") %>% kable(digits=2)
+
+# summary table: grand mean
+r1_allG <- r1_allL %>% group_by(roi, cond) %>%
+  dplyr::summarise(z.m = mean(z), z.sd = sd(z)) %>%
+  ungroup()
+r1_allG$z.se <- Rmisc::summarySEwithin(data = r1_allL, measurevar = "z", 
+                                       idvar = "subj", withinvars = c("roi","cond"))$se
+r1_allG$z.ci <- Rmisc::summarySEwithin(data = r1_allL, measurevar = "z", 
+                                       idvar = "subj", withinvars = c("roi", "cond"))$ci
+r1_allG <- r1_allG %>% 
+  mutate(lower.ci = z.m-z.ci,
+         upper.ci = z.m+z.ci,
+         lower.se = z.m-z.se,
+         upper.se = z.m+z.se)
+
+r1_allG %>% dplyr::select(roi, cond, z.m) %>%
+  spread(key=roi, value=z.m) %>% kable(digits=2)
+
+```
+
+<br>
+
+```{r, fig.width= 14, fig.height=10}
+
+# phase 1
+targ_roi = c("loc")
+r1_allL.p1 <- r1_allL %>% filter(roi %in% targ_roi)
+r1_allW.p1 <- r1_allW %>% filter(roi %in% targ_roi)
+r1_allG.p1 <- r1_allG %>% filter(roi %in% targ_roi)
+
+r1.p1.all.plot1 <- ggplot(data=r1_allL.p1, aes(x=cond, y=z, fill=cond, shpae=cond)) +
+  stat_summary(fun = mean, geom = "bar", position="dodge", 
+               na.rm = TRUE, alpha = .9, width = 0.8,  size = 0.3, color='black') +
+  # geom_hline(yintercept=0, linetype='solid', color='black', alpha =1, size=1) +
+  facet_grid(.~roi, scales="free_x", space = "free",
+             labeller = labeller(roi = c("loc" = "LOC",
+                                         "lloc" = "left LOC",
+                                         "rloc" = "right LOC",
+                                         "pf" = "pF",
+                                         "lpf" = "left pF",
+                                         "rpf" = "right pF",
+                                         "lloc31" = "left LOC31",
+                                         "rloc31" = "right LOC31",
+                                         "v1" = "V1",
+                                         "v2" = "V2",
+                                         "v3" = "V3",
+                                         "v4" = "V4"))) +
+  # geom_dotplot(binaxis = "y", stackdir = "center", stackratio = 0.5,
+  #              color = "black", alpha = 0.5, #position = "nudge",
+  #              position = position_jitter(0.15),
+  #              inherit.aes = TRUE, binwidth = 0.4) +
+   # geom_jitter(aes(x=cond, y=z, fill=cond,color = cond), 
+   #             position=position_jitter(0.1), cex=2
+   #             ) + 
+  geom_point(data=r1_allL.p1, aes(x=cond, y=z, fill=cond), position = position_dodge(width=0.8),
+             size=2, show.legend=F, color="gray90") +
+  geom_segment(data=filter(r1_allW.p1), inherit.aes = FALSE,
+               aes(x=1, y=filter(r1_allW.p1)$cons,
+                   xend=2, yend=filter(r1_allW.p1)$imm),
+               color="gray90") +
+  geom_errorbar(data=r1_allG.p1, aes(x=cond, y= z.m, ymin=lower.se, ymax=upper.se), width=.2,
+                position=position_dodge(.8), color = "black") +
+  # geom_pointrange(data=r1_allG.p1, aes(x = cond, y=z.m, ymin = z.m-z.se, ymax = z.m+z.se),
+  #                 position = position_dodge(0.80), color = "darkred", size = 1, show.legend = FALSE) +
+  scale_x_discrete(labels=c("Cons","Imm")) +
+  scale_fill_manual(values = c("#F17402", "#2C57AA"), # c("#F17402", "#2C57AA"), c("#feb24c", "#91bfdb")
+                    labels = c("Consolidated", "Immediate")) +
+  # scale_color_manual(values = c("#F17402", "#2C57AA"), # c("#F17402", "#2C57AA"), c("#feb24c", "#91bfdb")
+  #                   labels = c("Consolidated", "Immediate")) +
+  
+  coord_cartesian(ylim = c(0, 15), clip = "on") +
+  labs(x = "Condition", y = "Parameter Estimation (Z)") +
+  ggtitle("Objects") +
+  theme_bw(base_size = 18) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="bottom")
+#ggsave("fig1_1.fmri.jpg", plot = r1.p1.all.plot1, width=4, height=6, unit='in', dpi=600)
+r1.p1.all.plot1
+
+
+targ_roi = c("lloc", "rloc")
+r1_allL.p1 <- r1_allL %>% filter(roi %in% targ_roi)
+r1_allW.p1 <- r1_allW %>% filter(roi %in% targ_roi)
+r1_allG.p1 <- r1_allG %>% filter(roi %in% targ_roi)
+
+r1.p1.all.plot2 <- ggplot(data=r1_allL.p1, aes(x=cond, y=z, fill=cond, shpae=cond)) +
+  stat_summary(fun = mean, geom = "bar", position="dodge", 
+               na.rm = TRUE, alpha = .9, width = 0.8, size = 0.3, color='black') +
+  # geom_hline(yintercept=0, linetype='solid', color='black', alpha =1, size=1) +
+  facet_grid(.~roi, scales="free_x", space = "free",
+             labeller = labeller(roi = c("loc" = "LOC",
+                                         "lloc" = "left LOC",
+                                         "rloc" = "right LOC",
+                                         "pf" = "pF",
+                                         "lpf" = "left pF",
+                                         "rpf" = "right pF",
+                                         "lloc31" = "left LOC31",
+                                         "rloc31" = "right LOC31",
+                                         "v1" = "V1",
+                                         "v2" = "V2",
+                                         "v3" = "V3",
+                                         "v4" = "V4"))) +
+  # geom_dotplot(binaxis = "y", stackdir = "center", stackratio = 0.5,
+  #              color = "black", alpha = 0.5, #position = "nudge",
+  #              position = position_jitter(0.15),
+  #              inherit.aes = TRUE, binwidth = 0.4) +
+   # geom_jitter(aes(x=cond, y=z, fill=cond,color = cond), 
+   #             position=position_jitter(0.1), cex=2
+   #             ) + 
+  geom_point(data=r1_allL.p1, aes(x=cond, y=z, fill=cond), position = position_dodge(width=0.8),
+             size=2, show.legend=F, color="gray90") +
+  geom_segment(data=filter(r1_allW.p1), inherit.aes = FALSE,
+               aes(x=1, y=filter(r1_allW.p1)$cons,
+                   xend=2, yend=filter(r1_allW.p1)$imm),
+               color="gray90") +
+  geom_errorbar(data=r1_allG.p1, aes(x=cond, y= z.m, ymin=lower.se, ymax=upper.se), width=.2,
+                position=position_dodge(.8), color = "black") +
+  # geom_pointrange(data=r1_allG.p1, aes(x = cond, y=z.m, ymin = z.m-z.se, ymax = z.m+z.se),
+  #                 position = position_dodge(0.80), color = "darkred", size = 1, show.legend = FALSE) +
+  scale_x_discrete(labels=c("Cons","Imm")) +
+  scale_fill_manual(values = c("#F17402", "#2C57AA"), # c("#F17402", "#2C57AA"), c("#feb24c", "#91bfdb")
+                    labels = c("Consolidated", "Immediate")) +
+  # scale_color_manual(values = c("#F17402", "#2C57AA"), # c("#F17402", "#2C57AA"), c("#feb24c", "#91bfdb")
+  #                   labels = c("Consolidated", "Immediate")) +
+  
+  coord_cartesian(ylim = c(0, 15), clip = "on") +
+  labs(x = "Condition", y = "Parameter Estimation (Z)") +
+  ggtitle("Objects") +
+  theme_bw(base_size = 18) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="bottom")
+r1.p1.all.plot2
+
+targ_roi =  c("p_hpp", "a_hpp", "mpfc")
+r1_allL.p1 <- r1_allL %>% filter(roi %in% targ_roi)
+r1_allW.p1 <- r1_allW %>% filter(roi %in% targ_roi)
+r1_allG.p1 <- r1_allG %>% filter(roi %in% targ_roi)
+
+r1.p1.all.plot2 <- ggplot(data=r1_allL.p1, aes(x=cond, y=z, fill=cond)) +
+  stat_summary(fun = mean, geom = "bar", position="dodge", 
+               na.rm = TRUE, alpha = .9, width = 0.8,  size = 0.3, color='black') +
+  geom_hline(yintercept=0, linetype='solid', color='black', alpha =1, size=1) +
+  facet_grid(.~roi, scales="free_x", space = "free",
+             labeller = labeller(roi = c("bhpp" = "HIP",
+                              "lhpp" = "left\nHIP",
+                              "rhpp" = "right\nHIP",
+                              "a_hpp" = "anterior\nHIP",
+                              "p_hpp" = "posterior\nHIP",
+                              "la_hpp" = "l-a HIP",
+                              "lp_hpp" = "l-p HIP",
+                              "ra_hpp" = "r-a HIP",
+                              "rp_hpp" = "r-p HIP",
+                              "mpfc" = "mPFC"))) + 
+  # geom_dotplot(binaxis = "y", stackdir = "center", stackratio = 0.7,
+  #              color = "black", alpha = 0.5, position = "dodge",
+  #              inherit.aes = TRUE, binwidth = 0.008) +
+  geom_point(data=r1_allL.p1, aes(x=cond, y=z, fill=cond), position = position_dodge(width=0.8),
+             size=2, show.legend=F, color="gray90") +
+  geom_segment(data=filter(r1_allW.p1), inherit.aes = FALSE,
+               aes(x=1, y=filter(r1_allW.p1)$cons,
+                   xend=2, yend=filter(r1_allW.p1)$imm),
+               color="gray90") +
+  geom_errorbar(data=r1_allG.p1, aes(x=cond, y= z.m, ymin=lower.se, ymax=upper.se), width=.2,
+                position=position_dodge(.8), color = "black") +
+  # geom_pointrange(data=r1_allG.p1, aes(x = cond, y=z.m, ymin = z.m-z.se, ymax = z.m+z.se),
+  #                 position = position_dodge(0.80), color = "darkred", size = 1, show.legend = FALSE) +
+  scale_x_discrete(labels=c("Cons","Imm")) +
+  scale_fill_manual(values = c("#F17402", "#2C57AA"), # c("#F17402", "#2C57AA"), c("#feb24c", "#91bfdb")
+                    labels = c("Consolidated", "Immediate")) +
+  # coord_cartesian(ylim = c(-5, 15), clip = "on") +
+  labs(x = "Condition", y = "Parameter Estimation (Z)") +
+  ggtitle("Objects") +
+  theme_bw(base_size = 18) +
+  theme(#axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+    axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="bottom")
+# plot-control 5
+r1.p1.all.plot2
+
+```
+
+<br>
+
+각 ROI에서 조건에 따른 활성화 차이를 통계 분석하였다. 
+
+<Br>
+
+combined LOC의 결과는 아래와 같다.
+
+<br>
+
+```{r, echo=T}
+targ_roi<- c("loc")
+r1_allL.p1 <- r1_allL %>% filter(roi %in% targ_roi)
+r1.aov1 <- aov_ez(id="subj", dv="z", data = r1_allL.p1, within = c("cond"))
+                  #anova_table = list(correction = "none"))
+nice(r1.aov1, es="pes") %>% kable(digits=2)
+```
+
+<br>
+
+```{r, echo=T}
+targ_roi<- c("loc")
+r1_allL.p1 <- r1_allL %>% filter(roi %in% targ_roi)
+
+p_h1 <- r1_allL.p1 %>% group_by(roi) %>% 
+  rstatix::pairwise_t_test(z ~ cond, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- r1_allL.p1 %>% group_by(roi) %>% 
+  rstatix::cohens_d(z ~ cond, paired=T, ci = F) %>% 
+  dplyr::select(roi, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi","group1", "group2")) %>% kable(digits=3)
+
+```
+
+<br>
+
+left & right LOC의 결과는 아래와 같다.
+
+<br>
+
+```{r, echo=T}
+targ_roi<- c("lloc", "rloc")
+r1_allL.p1 <- r1_allL %>% filter(roi %in% targ_roi)
+r1.aov1 <- aov_ez(id="subj", dv="z", data = r1_allL.p1, within = c("cond", "roi"))
+                  #anova_table = list(correction = "none"))
+nice(r1.aov1, es="pes") %>% kable(digits=2)
+```
+
+<br>
+
+```{r, echo=T}
+p_h1 <- r1_allL.p1 %>% group_by(roi) %>% 
+  rstatix::pairwise_t_test(z ~ cond, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- r1_allL.p1 %>% group_by(roi) %>% 
+  rstatix::cohens_d(z ~ cond, paired=T, ci = F) %>% 
+  dplyr::select(roi, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi" ,"group1", "group2")) %>% kable(digits=3)
+```
+
+<br>
+
+Anterior-Posterior Hippocampus, mPFC에서 조건 간 활성화 차이는 다음과 같다.
+
+<br>
+
+```{r, echo=T}
+targ_roi = c("a_hpp", "p_hpp","mpfc")
+
+r1_allL.p1 <- r1_allL %>% filter(roi %in% targ_roi)
+r1.aov1 <- aov_ez(id="subj", dv="z", data = r1_allL.p1, within = c("cond", "roi"))
+                  #anova_table = list(correction = "none"))
+nice(r1.aov1, es="pes") %>% kable(digits=2)
+```
+
+<br>
+
+```{r, echo=T}
+p_h1 <- r1_allL.p1 %>% group_by(roi) %>% 
+  rstatix::pairwise_t_test(z ~ cond, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- r1_allL.p1 %>% group_by(roi) %>% 
+  rstatix::cohens_d(z ~ cond, paired=T, ci = F) %>% 
+  dplyr::select(roi, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi" ,"group1", "group2")) %>% kable(digits=3)
+```
+
+<br>
+
+****
+
+<br>
+
+### Results 2-1 - Constituent Explainability - Main
+
+<br>
+
+두 번째 가설은 Consolidation으로 물체에 대한 구조화된 표상이 촉진됨에 따라 유사한 물체를 이루는 의미 있는 요소가 잘 파악되어, 요소들의 신경 패턴으로 그 요소들로 구성된 물체의 신경 패턴을 설명하는 정도가 증가한다는 것이었다. consolidation이 요소들의 신경 패턴으로 물체의 신경 패턴을 설명하는 정도를 증가시키는지 확인하기 위해 Constituent Explainability Analysis를 수행하였다. 
+
+<br>
+
+2nd learning phase에서 획득된 각 물체들의 LOC 신경 패턴과 snapshot phase에서 획득된 해당 물체들을 구성하는 요소들의 LOC 신경 패턴 간의 관계를 검증하기 위해, 요소들이 LOC 신경 패턴이 물체의 LOC 신경 패턴을 설명하는 General Linear Model (Y = b0 + B1*X1 + e)을 각 물체에 대해 구성하였다. Model의 dependent variable(response, Y)로는 물체의 LOC의 t-stats 패턴이 투입되었고, independent variable(predictor, X)는 그 물체를 구성하는 두 요소들의 LOC t-stats 패턴이 평균된 결합 패턴(synthetic pattern)이 투입되었다. 이 Model을 통해 두 조건에 포함된 각 물체들에 대해 요소의 패턴이 물체의 패턴을 얼마나 잘 설명하는지를 나타내는 Beta value를 획득하였다. Beta value를 조건별로 평균화하여 조건과 ROI를 요인으로 한 repeated-measures analysis of variance (RM-ANOVA)를 수행하였다. 
+
+<br>
+
+
+```{r, collapse=TRUE}
+r2n <- read.csv("data/r2_glmfit_sum.csv", header = T)
+glimpse(r2n, width = 70)
+
+r2n_l <- r2n
+r2n_l$subj = factor(r2n_l$subj)
+# r2n_l <- r2n_l %>% filter(subj!=99)
+r2n_l$cond = factor(r2n_l$cond, levels=c(1,2),labels=c("cons","imm")) 
+
+targ_roi<- c("loc", "lloc", "rloc", 
+             "p_hpp", "a_hpp", 
+             "mpfc")
+r2n_l <- r2n_l %>% filter(roi %in% targ_roi)
+
+r2n_l$roi = factor(r2n_l$roi, 
+                   levels=c("loc","lloc","rloc",
+                            "pf","lpf","rpf",
+                            "lloc31","rloc31",
+                            "bhpp","lhpp","rhpp", "a_hpp", "p_hpp","la_hpp", "lp_hpp", 
+                            "ra_hpp", "rp_hpp", "mpfc"), 
+                   labels=c("loc","lloc","rloc",
+                            "pf","lpf","rpf",
+                            "lloc31","rloc31",
+                            "bhpp","lhpp","rhpp", "a_hpp", "p_hpp","la_hpp", "lp_hpp", 
+                            "ra_hpp", "rp_hpp", "mpfc")) 
+r2n_l$b_s <- r2n_l$beta_sum # sum of two ptt
+r2n_l$b_m <- r2n_l$beta_mean # mean of two ptt
+r2n_l$b_m_o <- r2n_l$beta_mean_other 
+r2n_l$b_m_d <- r2n_l$beta_mean_diff 
+r2n_l <- r2n_l %>% dplyr::select(subj,roi,cond, b_m, b_s, b_m_o, b_m_d)
+
+length(unique(r2n_l$subj))
+
+# check number of trials for each condition/subj
+table(r2n_l$subj)
+table(r2n_l$cond, r2n_l$subj)
+table(r2n_l$roi, r2n_l$subj)
+
+```
+
+<br>
+
+Beta value를 조건과 ROI에 따라 요약하였다.
+
+<br>
+  
+```{r, collapse=TRUE}
+# subject-level, long format
+r2n_allL <- r2n_l %>% group_by(subj, roi, cond) %>%
+  dplyr::summarise(beta=mean(b_m)) %>%
+  ungroup()
+# r2n_allL %>% kable(digits=2)
+
+# subject-level, wide format
+r2n_allW <- r2n_allL %>% spread(key=cond, value = beta)
+# r2n_allW %>% kable(digits=3)
+# r2n_allW %>% filter(roi=="loc") %>% kable(digits=3)
+
+r2n_allW1 <- r2n_allL %>% spread(key=roi, value=beta)
+# r2n_allW1 %>% kable(digits=3)
+
+# summary table: grand mean
+r2n_allG <- r2n_allL %>% group_by(roi, cond) %>%
+  dplyr::summarise(beta.m = mean(beta), beta.sd = sd(beta)) %>%
+  ungroup()
+r2n_allG$beta.se <- Rmisc::summarySEwithin(data = r2n_allL, measurevar = "beta", 
+                                        idvar = "subj", withinvars = c("roi","cond"))$se
+r2n_allG$beta.ci <- Rmisc::summarySEwithin(data = r2n_allL, measurevar = "beta", 
+                                        idvar = "subj", withinvars = c("roi", "cond"))$ci
+r2n_allG <- r2n_allG %>% 
+  mutate(lower.ci = beta.m-beta.ci,
+         upper.ci = beta.m+beta.ci,
+         lower.se = beta.m-beta.se,
+         upper.se = beta.m+beta.se)
+
+targ_roi1 = c("loc", "lloc", "rloc", "p_hpp", "a_hpp","mpfc")
+r2n_allG %>% filter(roi %in% targ_roi1) %>% dplyr::select(roi, cond, beta.m) %>%
+  spread(key=roi, value=beta.m) %>% kable(digits=3)
+```
+
+
+<br>
+
+```{r, fig.width= 14, fig.height=10}
+
+targ_roi = c("loc")
+r2n_allL.v <- r2n_allL %>% filter(roi %in% targ_roi)
+r2n_allW.v <- r2n_allW %>% filter(roi %in% targ_roi)
+r2n_allG.v <- r2n_allG %>% filter(roi %in% targ_roi)
+r4.all.plot3 <- ggplot(data=r2n_allL.v, aes(x=cond, y=beta, fill=cond)) +
+  stat_summary(fun = mean, geom = "bar", position="dodge", 
+               na.rm = TRUE, alpha = .9, width = 0.8, size = 0.3, color='black') +
+  # geom_hline(yintercept=0, linetype='solid', color='black', alpha =1, size=1) +
+  facet_grid(.~roi, scales="free_x", space = "free",
+             labeller = labeller(roi = c("loc" = "LOC",
+                                         "lloc" = "left LOC",
+                                         "rloc" = "right LOC",
+                                         "pf" = "pF",
+                                         "lpf" = "left pF",
+                                         "rpf" = "right pF",
+                                         "lloc31" = "left LOC31",
+                                         "rloc31" = "right LOC31"))) +
+  geom_point(data=r2n_allL.v, aes(x=cond, y=beta, fill=cond), position = position_dodge(width=0.8),
+             size=2, show.legend=F, color="gray90") +
+  geom_segment(data=filter(r2n_allW.v), inherit.aes = FALSE,
+               aes(x=1, y=filter(r2n_allW.v)$cons,
+                   xend=2, yend=filter(r2n_allW.v)$imm),
+               color="gray90") +
+  geom_errorbar(data=r2n_allG.v, aes(x=cond, y= beta.m, ymin=lower.se, ymax=upper.se), width=.2,
+                position=position_dodge(.8), color = "black") +
+  # geom_pointrange(data=r1_allG.p1, aes(x = cond, y=z.m, ymin = z.m-z.se, ymax = z.m+z.se),
+  #                 position = position_dodge(0.80), color = "darkred", size = 1, show.legend = FALSE) +
+  scale_x_discrete(labels=c("Cons","Imm")) +
+  scale_fill_manual(values = c("#F17402", "#2C57AA"), # c("#F17402", "#2C57AA"), c("#feb24c", "#91bfdb")
+                    labels = c("Consolidated", "Immediate")) +
+  coord_cartesian(ylim = c(0, 0.7), clip = "on") +
+  labs(x = "Condition", y = "Beta Value") +
+  ggtitle("Synthetic Pattern") +
+  theme_bw(base_size = 18) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="bottom")
+r4.all.plot3
+
+targ_roi = c("lloc", "rloc")
+r2n_allL.v <- r2n_allL %>% filter(roi %in% targ_roi)
+r2n_allW.v <- r2n_allW %>% filter(roi %in% targ_roi)
+r2n_allG.v <- r2n_allG %>% filter(roi %in% targ_roi)
+r4.all.plot3 <- ggplot(data=r2n_allL.v, aes(x=cond, y=beta, fill=cond)) +
+  stat_summary(fun = mean, geom = "bar", position="dodge", 
+               na.rm = TRUE, alpha = .9, width = 0.8, size = 0.3, color='black') +
+  # geom_hline(yintercept=0, linetype='solid', color='black', alpha =1, size=1) +
+  facet_grid(.~roi, scales="free_x", space = "free",
+             labeller = labeller(roi = c("loc" = "LOC",
+                                         "lloc" = "left LOC",
+                                         "rloc" = "right LOC",
+                                         "pf" = "pF",
+                                         "lpf" = "left pF",
+                                         "rpf" = "right pF",
+                                         "lloc31" = "left LOC31",
+                                         "rloc31" = "right LOC31"))) +
+  geom_point(data=r2n_allL.v, aes(x=cond, y=beta, fill=cond), position = position_dodge(width=0.8),
+             size=2, show.legend=F, color="gray90") +
+  geom_segment(data=filter(r2n_allW.v), inherit.aes = FALSE,
+               aes(x=1, y=filter(r2n_allW.v)$cons,
+                   xend=2, yend=filter(r2n_allW.v)$imm),
+               color="gray90") +
+  geom_errorbar(data=r2n_allG.v, aes(x=cond, y= beta.m, ymin=lower.se, ymax=upper.se), width=.2,
+                position=position_dodge(.8), color = "black") +
+  # geom_pointrange(data=r1_allG.p1, aes(x = cond, y=z.m, ymin = z.m-z.se, ymax = z.m+z.se),
+  #                 position = position_dodge(0.80), color = "darkred", size = 1, show.legend = FALSE) +
+  scale_x_discrete(labels=c("Cons","Imm")) +
+  scale_fill_manual(values = c("#F17402", "#2C57AA"), # c("#F17402", "#2C57AA"), c("#feb24c", "#91bfdb")
+                    labels = c("Consolidated", "Immediate")) +
+  coord_cartesian(ylim = c(0, 0.7), clip = "on") +
+  labs(x = "Condition", y = "Beta Value") +
+  ggtitle("Synthetic Pattern") +
+  theme_bw(base_size = 18) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="bottom")
+r4.all.plot3
+
+
+targ_roi = c("p_hpp", "a_hpp", "mpfc")
+r2n_allL.v <- r2n_allL %>% filter(roi %in% targ_roi)
+r2n_allW.v <- r2n_allW %>% filter(roi %in% targ_roi)
+r2n_allG.v <- r2n_allG %>% filter(roi %in% targ_roi)
+
+r4.all.plot4 <- ggplot(data=r2n_allL.v, aes(x=cond, y=beta, fill=cond)) +
+  stat_summary(fun = mean, geom = "bar", position="dodge", 
+               na.rm = TRUE, alpha = .9, width = 0.8, size = 0.3, color='black') +
+  geom_hline(yintercept=0, linetype='solid', color='black', alpha =1, size=1) +
+  facet_grid(.~roi, scales="free_x", space = "free",
+             labeller = labeller(roi = c("bhpp" = "HIP",
+                                         "lhpp" = "left\nHIP",
+                                         "rhpp" = "right\nHIP",
+                                         "a_hpp" = "anterior\nHIP",
+                                         "p_hpp" = "posterior\nHIP",
+                                         "la_hpp" = "l-a HIP",
+                                         "lp_hpp" = "l-p HIP",
+                                         "ra_hpp" = "r-a HIP",
+                                         "rp_hpp" = "r-p HIP",
+                                         "mpfc" = "mPFC"))) +
+  geom_point(data=r2n_allL.v, aes(x=cond, y=beta, fill=cond), position = position_dodge(width=0.8),
+             size=2, show.legend=F, color="gray90") +
+  geom_segment(data=filter(r2n_allW.v), inherit.aes = FALSE,
+               aes(x=1, y=filter(r2n_allW.v)$cons,
+                   xend=2, yend=filter(r2n_allW.v)$imm),
+               color="gray90") +
+  geom_errorbar(data=r2n_allG.v, aes(x=cond, y= beta.m, ymin=lower.se, ymax=upper.se), width=.2,
+                position=position_dodge(.8), color = "black") +
+  # geom_pointrange(data=r1_allG.p1, aes(x = cond, y=z.m, ymin = z.m-z.se, ymax = z.m+z.se),
+  #                 position = position_dodge(0.80), color = "darkred", size = 1, show.legend = FALSE) +
+  scale_x_discrete(labels=c("Cons","Imm")) +
+  scale_fill_manual(values = c("#F17402", "#2C57AA"), # c("#F17402", "#2C57AA"), c("#feb24c", "#91bfdb")
+                    labels = c("Consolidated", "Immediate")) +
+  # coord_cartesian(ylim = c(0, 0.6), clip = "on") +
+  labs(x = "Condition", y = "Beta Value") +
+  ggtitle("Synthetic Pattern") +
+  theme_bw(base_size = 18) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="bottom")
+r4.all.plot4
+```
+
+<br>
+
+주요 ROI 에서 조건 간 Beta Value 차이가 있는지 통계 분석을 수행하였다.
+
+<br>
+
+combined LOC 의 결과는 아래와 같다.
+
+<br>
+
+```{r, echo=T}
+targ_roi = c("loc")
+r2n_allL.tmp <- r2n_allL %>% filter(roi %in% targ_roi)
+p_h1 <- r2n_allL.tmp %>% group_by(roi) %>% 
+  rstatix::pairwise_t_test(beta ~ cond, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- r2n_allL.tmp %>% group_by(roi) %>% 
+  rstatix::cohens_d(beta ~ cond, paired=T, ci = F) %>% 
+  dplyr::select(roi, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi",  "group1", "group2")) %>% kable(digits=3)
+
+```
+
+<br>
+
+left & right LOC 의 결과는 아래와 같다.
+
+<br>
+
+```{r, echo=T}
+targ_roi = c("lloc", "rloc")
+
+r2n_allL.tmp <- r2n_allL %>% filter(roi %in% targ_roi)
+r2n.aov1 <- aov_ez(id="subj", dv="beta", data = r2n_allL.tmp, within = c("cond", "roi"))
+# summary(r2n.aov1)
+nice(r2n.aov1, es="pes") %>% kable(digits=2)
+```
+
+<br>
+
+```{r, echo=T}
+p_h1 <- r2n_allL.tmp %>% group_by(roi) %>% 
+  rstatix::pairwise_t_test(beta ~ cond, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- r2n_allL.tmp %>% group_by(roi) %>% 
+  rstatix::cohens_d(beta ~ cond, paired=T, ci = F) %>% 
+  dplyr::select(roi, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi",  "group1", "group2")) %>% kable(digits=3)
+```
+
+<br>
+
+Posterior-Anterior Hippocampus와 mPFC의 결과는 아래와 같다. 
+
+<br>
+
+```{r, echo=T}
+targ_roi = c("p_hpp", "a_hpp", "mpfc")
+
+r2n_allL.tmp <- r2n_allL %>% filter(roi %in% targ_roi)
+r2n.aov1 <- aov_ez(id="subj", dv="beta", data = r2n_allL.tmp, within = c("cond", "roi"))
+# summary(r2n.aov1)
+nice(r2n.aov1, es="pes") %>% kable(digits=2)
+```
+
+<br>
+
+```{r, echo=T}
+p_h1 <- r2n_allL.tmp %>% group_by(roi) %>% 
+  rstatix::pairwise_t_test(beta ~ cond, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- r2n_allL.tmp %>% group_by(roi) %>% 
+  rstatix::cohens_d(beta ~ cond, paired=T, ci = F) %>% 
+  dplyr::select(roi, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi",  "group1", "group2")) %>% kable(digits=3)
+```
+
+<br>
+
+### Results 2-2 - Constituent Explainabilit - Supplementary
+
+<br>
+
+두 조건 간의 beta value 차이가 정말로 각 물체가 물체를 구성하는 요소들의 구조화된 결합으로 표상되는 정도를 나타나는 것인지를 확인하기 위해, 보조적 분석을 수행하였다. 위의 분석과 동일하게 각 물체가 그것을 구성하는 요소에 대해 설명되는 정도에 대한 Beta value를 획득하고 이를 Self 조건으로 명명하였다. 그리고 이와 유사하게, 그 물체가 물체에 포함되지 않는 다른 두 요소들의 조합에 의해 설명되는 정도를 계산하여 Other 조건을 구성하였다. 이러한 절차를 Consolidated 조건과 Immediate 조건 각각에서 수행하였다. 결과적으로 조건 (Consolidated vs. Immediate), ROI (6개), Type (Self vs. Other)의 세 변인이 구성되었다.
+
+<br>
+
+#### Results 2-2-1 - Self vs. Other
+
+<br>
+
+조건 (Consolidated vs. Immediate), ROI (6개), Type (Self vs. Other)을 요인으로 Beta value를 요약하였다.
+
+<br>
+  
+```{r, collapse=TRUE}
+
+# subject-level, long format
+r2n_l_m <- r2n_l %>% dplyr::select(subj, roi, cond, b_m, b_m_o)
+r2n_l_m <- gather(data = r2n_l_m, key = type, beta, b_m, b_m_o, factor_key=TRUE)
+r2n_l_m$type <- factor(r2n_l_m$type,
+                       levels = c("b_m", "b_m_o"),
+                       labels = c("self", "other"))
+
+# subject-level, long format
+r2n_allL <- r2n_l_m %>% group_by(subj, roi, cond, type) %>%
+  dplyr::summarise(beta=mean(beta)) %>%
+  ungroup()
+# r2n_allL %>% kable(digits=2)
+
+# subject-level, wide format
+#r2n_allW <- r2n_allL %>% spread(key=cond, value = beta)
+r2n_allW <- r2n_allL %>% spread(key=type, value = beta)
+# r2n_allW %>% kable(digits=3)
+# r2n_allW %>% filter(roi=="loc") %>% kable(digits=3)
+
+r2n_allW1 <- r2n_allL %>% spread(key=roi, value=beta)
+# r2n_allW1 %>% kable(digits=3)
+
+# summary table: grand mean
+r2n_allG <- r2n_allL %>% group_by(roi, cond, type) %>%
+  dplyr::summarise(beta.m = mean(beta), beta.sd = sd(beta)) %>%
+  ungroup()
+
+r2n_allG$beta.se <- Rmisc::summarySEwithin(data = r2n_allL, measurevar = "beta", 
+                                        idvar = "subj", withinvars = c("roi","cond","type"))$se
+r2n_allG$beta.ci <- Rmisc::summarySEwithin(data = r2n_allL, measurevar = "beta", 
+                                        idvar = "subj", withinvars = c("roi", "cond","type"))$ci
+r2n_allG <- r2n_allG %>% 
+  mutate(lower.ci = beta.m-beta.ci,
+         upper.ci = beta.m+beta.ci,
+         lower.se = beta.m-beta.se,
+         upper.se = beta.m+beta.se)
+
+targ_roi1 = c("loc", "lloc", "rloc", "p_hpp", "a_hpp", "mpfc")
+r2n_allG %>% filter(roi %in% targ_roi1) %>% dplyr::select(roi, cond, type, beta.m) %>%
+  spread(key=roi, value=beta.m) %>% kable(digits=3)
+
+
+```
+
+<br>
+
+```{r, fig.width= 14, fig.height=10}
+
+targ_roi = c("loc")
+
+r2n_allL.v <- r2n_allL %>% filter(roi %in% targ_roi)
+r2n_allW.v <- r2n_allW %>% filter(roi %in% targ_roi)
+r2n_allG.v <- r2n_allG %>% filter(roi %in% targ_roi)
+r2n.all.plot1 <- ggplot(data=r2n_allL.v, aes(x=cond, y=beta, fill=type)) +
+  stat_summary(fun = mean, geom = "bar", position="dodge", 
+               na.rm = TRUE, alpha = .9, width = 0.8, size = 0.3, color='black') +
+  # geom_hline(yintercept=0, linetype='solid', color='black', alpha =1, size=1) +
+  facet_grid(.~roi, scales="free_x", space = "free",
+             labeller = labeller(roi = c("loc" = "LOC",
+                                         "lloc" = "left LOC",
+                                         "rloc" = "right LOC",
+                                         "pf" = "pF",
+                                         "lpf" = "left pF",
+                                         "rpf" = "right pF",
+                                         "lloc31" = "left LOC31",
+                                         "rloc31" = "right LOC31"))) +
+  geom_point(data=r2n_allL.v, aes(x=cond, y=beta, fill=type), position = position_dodge(width=0.8),
+             size=2, show.legend=F, color="gray90") +
+  geom_segment(data=filter(r2n_allW.v, cond == "cons"), inherit.aes = FALSE,
+               aes(x=0.8, y=filter(r2n_allW.v, cond == "cons")$self,
+                   xend=1.2, yend=filter(r2n_allW.v, cond == "cons")$other),
+               color="gray90") +
+  geom_segment(data=filter(r2n_allW.v, cond == "imm"), inherit.aes = FALSE,
+               aes(x=1.8, y=filter(r2n_allW.v, cond == "imm")$self,
+                   xend=2.2, yend=filter(r2n_allW.v, cond == "imm")$other),
+               color="gray90") +
+  geom_errorbar(data=r2n_allG.v, aes(x=cond, y= beta.m, ymin=lower.se, ymax=upper.se), width=.2,
+                position=position_dodge(.8), color = "black") +
+  scale_x_discrete(labels=c("Consolidated","Immediate")) +
+  scale_fill_manual(values = c("#feb24c", "#91bfdb"), # c("#F17402", "#2C57AA"), c()
+                    labels = c("Self", "Other")) +
+  # coord_cartesian(ylim = c(-0.5, 0.7), clip = "on") +
+  labs(x = "Condition", y = "Beta Value") +
+  ggtitle("Self vs. Other") +
+  theme_bw(base_size = 18) +
+  theme(# axis.text.x=element_blank(),
+        # axis.ticks.x=element_blank(),
+        axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="bottom")
+r2n.all.plot1
+
+
+targ_roi = c("lloc", "rloc")
+r2n_allL.v <- r2n_allL %>% filter(roi %in% targ_roi)
+r2n_allW.v <- r2n_allW %>% filter(roi %in% targ_roi)
+r2n_allG.v <- r2n_allG %>% filter(roi %in% targ_roi)
+r2n.all.plot1 <- ggplot(data=r2n_allL.v, aes(x=cond, y=beta, fill=type)) +
+  stat_summary(fun = mean, geom = "bar", position="dodge", 
+               na.rm = TRUE, alpha = .9, width = 0.8, size = 0.3, color='black') +
+  # geom_hline(yintercept=0, linetype='solid', color='black', alpha =1, size=1) +
+  facet_grid(.~roi, scales="free_x", space = "free",
+             labeller = labeller(roi = c("loc" = "LOC",
+                                         "lloc" = "left LOC",
+                                         "rloc" = "right LOC",
+                                         "pf" = "pF",
+                                         "lpf" = "left pF",
+                                         "rpf" = "right pF",
+                                         "lloc31" = "left LOC31",
+                                         "rloc31" = "right LOC31"))) +
+  geom_point(data=r2n_allL.v, aes(x=cond, y=beta, fill=type), position = position_dodge(width=0.8),
+             size=2, show.legend=F, color="gray90") +
+  geom_segment(data=filter(r2n_allW.v, cond == "cons"), inherit.aes = FALSE,
+               aes(x=0.8, y=filter(r2n_allW.v, cond == "cons")$self,
+                   xend=1.2, yend=filter(r2n_allW.v, cond == "cons")$other),
+               color="gray90") +
+  geom_segment(data=filter(r2n_allW.v, cond == "imm"), inherit.aes = FALSE,
+               aes(x=1.8, y=filter(r2n_allW.v, cond == "imm")$self,
+                   xend=2.2, yend=filter(r2n_allW.v, cond == "imm")$other),
+               color="gray90") +
+  geom_errorbar(data=r2n_allG.v, aes(x=cond, y= beta.m, ymin=lower.se, ymax=upper.se), width=.2,
+                position=position_dodge(.8), color = "black") +
+  scale_x_discrete(labels=c("Consolidated","Immediate")) +
+  scale_fill_manual(values = c("#feb24c", "#91bfdb"), # c("#F17402", "#2C57AA"), c()
+                    labels = c("Self", "Other")) +
+  # coord_cartesian(ylim = c(-0.5, 0.7), clip = "on") +
+  labs(x = "Condition", y = "Beta Value") +
+  ggtitle("Self vs. Other") +
+  theme_bw(base_size = 18) +
+  theme(# axis.text.x=element_blank(),
+        # axis.ticks.x=element_blank(),
+        axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="bottom")
+r2n.all.plot1
+
+
+
+targ_roi = c("p_hpp", "a_hpp","mpfc")
+r2n_allL.v <- r2n_allL %>% filter(roi %in% targ_roi)
+r2n_allW.v <- r2n_allW %>% filter(roi %in% targ_roi)
+r2n_allG.v <- r2n_allG %>% filter(roi %in% targ_roi)
+r2n.all.plot1 <- ggplot(data=r2n_allL.v, aes(x=cond, y=beta, fill=type)) +
+  stat_summary(fun = mean, geom = "bar", position="dodge", 
+               na.rm = TRUE, alpha = .9, width = 0.8, size = 0.3, color='black') +
+  geom_hline(yintercept=0, linetype='solid', color='black', alpha =1, size=1) +
+  facet_grid(.~roi, scales="free_x", space = "free",
+             labeller = labeller(roi = c("bhpp" = "HIP",
+                                         "lhpp" = "left\nHIP",
+                                         "rhpp" = "right\nHIP",
+                                         "a_hpp" = "anterior\nHIP",
+                                         "p_hpp" = "posterior\nHIP",
+                                         "la_hpp" = "l-a HIP",
+                                         "lp_hpp" = "l-p HIP",
+                                         "ra_hpp" = "r-a HIP",
+                                         "rp_hpp" = "r-p HIP",
+                                         "mpfc" = "mPFC"))) +
+  geom_point(data=r2n_allL.v, aes(x=cond, y=beta, fill=type), position = position_dodge(width=0.8),
+             size=2, show.legend=F, color="gray90") +
+  geom_segment(data=filter(r2n_allW.v, cond == "cons"), inherit.aes = FALSE,
+               aes(x=0.8, y=filter(r2n_allW.v, cond == "cons")$self,
+                   xend=1.2, yend=filter(r2n_allW.v, cond == "cons")$other),
+               color="gray90") +
+  geom_segment(data=filter(r2n_allW.v, cond == "imm"), inherit.aes = FALSE,
+               aes(x=1.8, y=filter(r2n_allW.v, cond == "imm")$self,
+                   xend=2.2, yend=filter(r2n_allW.v, cond == "imm")$other),
+               color="gray90") +
+  geom_errorbar(data=r2n_allG.v, aes(x=cond, y= beta.m, ymin=lower.se, ymax=upper.se), width=.2,
+                position=position_dodge(.8), color = "black") +
+  scale_x_discrete(labels=c("Consolidated","Immediate")) +
+  scale_fill_manual(values = c("#feb24c", "#91bfdb"), # c("#F17402", "#2C57AA"), c()
+                    labels = c("Self", "Other")) +
+  # coord_cartesian(ylim = c(-0.5, 0.7), clip = "on") +
+  labs(x = "Condition", y = "Beta Value") +
+  ggtitle("Self vs. Other") +
+  theme_bw(base_size = 18) +
+  theme(# axis.text.x=element_blank(),
+        # axis.ticks.x=element_blank(),
+        axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="bottom")
+r2n.all.plot1
+```
+
+<br>
+
+combined LOC의 통계 분석 결과는 아래와 같다.
+
+<br>
+
+```{r, echo=T}
+r2n_allL.p1 <- r2n_allL %>% filter(roi =="loc")
+r2n.aov1.tmp <- aov_ez(id="subj", dv="beta", data = r2n_allL.p1, within = c("cond", "type"))
+# summary(r2n.aov1)
+nice(r2n.aov1.tmp, es="pes") %>% kable(digits=2)
+
+p_h1 <- r2n_allL.p1 %>% group_by(roi, cond) %>% 
+  rstatix::pairwise_t_test(beta ~ type, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, cond, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- r2n_allL.p1 %>% group_by(roi, cond) %>% 
+  rstatix::cohens_d(beta ~ type, paired=T, ci = F) %>% 
+  dplyr::select(roi, cond, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi", "cond", "group1", "group2")) %>% kable(digits=3)
+
+p_h1 <- r2n_allL.p1 %>% group_by(roi, type) %>% 
+  rstatix::pairwise_t_test(beta ~ cond, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, type, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- r2n_allL.p1 %>% group_by(roi, type) %>% 
+  rstatix::cohens_d(beta ~ cond, paired=T, ci = F) %>% 
+  dplyr::select(roi, type, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi", "type", "group1", "group2")) %>% kable(digits=3)
+
+
+```
+
+<br>
+
+left & right LOC의 결과는 아래와 같다.
+
+<br>
+
+```{r, echo=T}
+targ_roi = c("lloc", "rloc")
+r2n_allL.tmp <- r2n_allL %>% filter(roi %in% targ_roi)
+r2n.aov1 <- aov_ez(id="subj", dv="beta", data = r2n_allL.tmp, within = c("cond", "roi", "type"))
+# summary(r2n.aov1)
+nice(r2n.aov1, es="pes") %>% kable(digits=2)
+```
+
+<br>
+
+```{r, echo=T}
+
+p_h1 <- r2n_allL.tmp %>% group_by(roi, cond) %>% 
+  rstatix::pairwise_t_test(beta ~ type, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, cond, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- r2n_allL.tmp %>% group_by(roi, cond) %>% 
+  rstatix::cohens_d(beta ~ type, paired=T, ci = F) %>% 
+  dplyr::select(roi, cond, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi", "cond", "group1", "group2")) %>% kable(digits=3)
+
+
+p_h1 <- r2n_allL.tmp %>% group_by(roi, type) %>% 
+  rstatix::pairwise_t_test(beta ~ cond, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, type, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- r2n_allL.tmp %>% group_by(roi, type) %>% 
+  rstatix::cohens_d(beta ~ cond, paired=T, ci = F) %>% 
+  dplyr::select(roi, type, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi", "type", "group1", "group2")) %>% kable(digits=3)
+
+```
+
+<br>
+
+Posterior-Anterior Hippocampus, mPFC 의 결과는 아래와 같다.
+
+<br>
+
+```{r, echo=T}
+targ_roi = c("p_hpp", "a_hpp", "mpfc")
+r2n_allL.tmp <- r2n_allL %>% filter(roi %in% targ_roi)
+r2n.aov1 <- aov_ez(id="subj", dv="beta", data = r2n_allL.tmp, within = c("cond", "roi", "type"))
+# summary(r2n.aov1)
+nice(r2n.aov1, es="pes") %>% kable(digits=2)
+```
+
+<br>
+
+```{r, echo=T}
+p_h1 <- r2n_allL.tmp %>% group_by(roi, cond) %>% 
+  rstatix::pairwise_t_test(beta ~ type, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, cond, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- r2n_allL.tmp %>% group_by(roi, cond) %>% 
+  rstatix::cohens_d(beta ~ type, paired=T, ci = F) %>% 
+  dplyr::select(roi, cond, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi", "cond", "group1", "group2")) %>% kable(digits=3)
+
+p_h1 <- r2n_allL.tmp %>% group_by(roi, type) %>% 
+  rstatix::pairwise_t_test(beta ~ cond, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, type, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- r2n_allL.tmp %>% group_by(roi, type) %>% 
+  rstatix::cohens_d(beta ~ cond, paired=T, ci = F) %>% 
+  dplyr::select(roi, type, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi", "type", "group1", "group2")) %>% kable(digits=3)
+
+
+```
+
+<br>
+
+
+#### Results 2-2-2 - Self - Other Difference
+
+<br>
+
+상호 작용을 확인하기 위해 조건 (Consolidated vs. Immediate)과 ROI (6개)를 요인으로 Self-Other Difference를 요약하였다.
+
+<br>
+  
+```{r, collapse=TRUE}
+# subject-level, long format
+r2n_allL <- r2n_l %>% group_by(subj, roi, cond) %>%
+  dplyr::summarise(beta=mean(b_m_d)) %>%
+  ungroup()
+# r2n_allL %>% kable(digits=2)
+
+# subject-level, wide format
+r2n_allW <- r2n_allL %>% spread(key=cond, value = beta)
+# r2n_allW %>% kable(digits=3)
+# r2n_allW %>% filter(roi=="loc") %>% kable(digits=3)
+
+r2n_allW1 <- r2n_allL %>% spread(key=roi, value=beta)
+# r2n_allW1 %>% kable(digits=3)
+
+# summary table: grand mean
+r2n_allG <- r2n_allL %>% group_by(roi, cond) %>%
+  dplyr::summarise(beta.m = mean(beta), beta.sd = sd(beta)) %>%
+  ungroup()
+r2n_allG$beta.se <- Rmisc::summarySEwithin(data = r2n_allL, measurevar = "beta", 
+                                        idvar = "subj", withinvars = c("roi","cond"))$se
+r2n_allG$beta.ci <- Rmisc::summarySEwithin(data = r2n_allL, measurevar = "beta", 
+                                        idvar = "subj", withinvars = c("roi", "cond"))$ci
+r2n_allG <- r2n_allG %>% 
+  mutate(lower.ci = beta.m-beta.ci,
+         upper.ci = beta.m+beta.ci,
+         lower.se = beta.m-beta.se,
+         upper.se = beta.m+beta.se)
+
+targ_roi1 = c("loc", "lloc", "rloc", "p_hpp", "a_hpp","mpfc")
+r2n_allG %>% filter(roi %in% targ_roi1) %>% dplyr::select(roi, cond, beta.m) %>%
+  spread(key=roi, value=beta.m) %>% kable(digits=3)
+
+
+```
+
+
+<br>
+
+```{r, fig.width= 14, fig.height=10}
+
+targ_roi = c("loc")
+r2n_allL.v <- r2n_allL %>% filter(roi %in% targ_roi)
+r2n_allW.v <- r2n_allW %>% filter(roi %in% targ_roi)
+r2n_allG.v <- r2n_allG %>% filter(roi %in% targ_roi)
+r4.all.plot3 <- ggplot(data=r2n_allL.v, aes(x=cond, y=beta, fill=cond)) +
+  stat_summary(fun = mean, geom = "bar", position="dodge", 
+               na.rm = TRUE, alpha = .9, width = 0.8, size = 0.3, color='black') +
+  geom_hline(yintercept=0, linetype='solid', color='black', alpha =1, size=0.5) +
+  facet_grid(.~roi, scales="free_x", space = "free",
+             labeller = labeller(roi = c("loc" = "LOC",
+                                         "lloc" = "left LOC",
+                                         "rloc" = "right LOC",
+                                         "pf" = "pF",
+                                         "lpf" = "left pF",
+                                         "rpf" = "right pF",
+                                         "lloc31" = "left LOC31",
+                                         "rloc31" = "right LOC31"))) +
+  geom_point(data=r2n_allL.v, aes(x=cond, y=beta, fill=cond), position = position_dodge(width=0.8),
+             size=2, show.legend=F, color="gray90") +
+  geom_segment(data=filter(r2n_allW.v), inherit.aes = FALSE,
+               aes(x=1, y=filter(r2n_allW.v)$cons,
+                   xend=2, yend=filter(r2n_allW.v)$imm),
+               color="gray90") +
+  geom_errorbar(data=r2n_allG.v, aes(x=cond, y= beta.m, ymin=lower.se, ymax=upper.se), width=.2,
+                position=position_dodge(.8), color = "black") +
+  # geom_pointrange(data=r1_allG.p1, aes(x = cond, y=z.m, ymin = z.m-z.se, ymax = z.m+z.se),
+  #                 position = position_dodge(0.80), color = "darkred", size = 1, show.legend = FALSE) +
+  scale_x_discrete(labels=c("Cons","Imm")) +
+  scale_fill_manual(values = c("#F17402", "#2C57AA"), # c("#F17402", "#2C57AA"), c("#feb24c", "#91bfdb")
+                    labels = c("Consolidated", "Immediate")) +
+  coord_cartesian(ylim = c(-0.05, 0.05), clip = "on") +
+  labs(x = "Condition", y = "Difference in Beta Value") +
+  ggtitle("Synthetic Pattern") +
+  theme_bw(base_size = 18) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="bottom")
+r4.all.plot3
+
+targ_roi = c("lloc", "rloc")
+r2n_allL.v <- r2n_allL %>% filter(roi %in% targ_roi)
+r2n_allW.v <- r2n_allW %>% filter(roi %in% targ_roi)
+r2n_allG.v <- r2n_allG %>% filter(roi %in% targ_roi)
+r4.all.plot3 <- ggplot(data=r2n_allL.v, aes(x=cond, y=beta, fill=cond)) +
+  stat_summary(fun = mean, geom = "bar", position="dodge", 
+               na.rm = TRUE, alpha = .9, width = 0.8, size = 0.3, color='black') +
+  geom_hline(yintercept=0, linetype='solid', color='black', alpha =1, size=0.5) +
+  facet_grid(.~roi, scales="free_x", space = "free",
+             labeller = labeller(roi = c("loc" = "LOC",
+                                         "lloc" = "left LOC",
+                                         "rloc" = "right LOC",
+                                         "pf" = "pF",
+                                         "lpf" = "left pF",
+                                         "rpf" = "right pF",
+                                         "lloc31" = "left LOC31",
+                                         "rloc31" = "right LOC31"))) +
+  geom_point(data=r2n_allL.v, aes(x=cond, y=beta, fill=cond), position = position_dodge(width=0.8),
+             size=2, show.legend=F, color="gray90") +
+  geom_segment(data=filter(r2n_allW.v), inherit.aes = FALSE,
+               aes(x=1, y=filter(r2n_allW.v)$cons,
+                   xend=2, yend=filter(r2n_allW.v)$imm),
+               color="gray90") +
+  geom_errorbar(data=r2n_allG.v, aes(x=cond, y= beta.m, ymin=lower.se, ymax=upper.se), width=.2,
+                position=position_dodge(.8), color = "black") +
+  # geom_pointrange(data=r1_allG.p1, aes(x = cond, y=z.m, ymin = z.m-z.se, ymax = z.m+z.se),
+  #                 position = position_dodge(0.80), color = "darkred", size = 1, show.legend = FALSE) +
+  scale_x_discrete(labels=c("Cons","Imm")) +
+  scale_fill_manual(values = c("#F17402", "#2C57AA"), # c("#F17402", "#2C57AA"), c("#feb24c", "#91bfdb")
+                    labels = c("Consolidated", "Immediate")) +
+  coord_cartesian(ylim = c(-0.05, 0.05), clip = "on") +
+  labs(x = "Condition", y = "Difference in Beta Value") +
+  ggtitle("Synthetic Pattern") +
+  theme_bw(base_size = 18) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="bottom")
+r4.all.plot3
+
+targ_roi = c("p_hpp", "a_hpp", "mpfc")
+r2n_allL.v <- r2n_allL %>% filter(roi %in% targ_roi)
+r2n_allW.v <- r2n_allW %>% filter(roi %in% targ_roi)
+r2n_allG.v <- r2n_allG %>% filter(roi %in% targ_roi)
+
+r4.all.plot4 <- ggplot(data=r2n_allL.v, aes(x=cond, y=beta, fill=cond)) +
+  stat_summary(fun = mean, geom = "bar", position="dodge", 
+               na.rm = TRUE, alpha = .9, width = 0.8, size = 0.3, color='black') +
+  geom_hline(yintercept=0, linetype='solid', color='black', alpha =1, size=0.5) +
+  facet_grid(.~roi, scales="free_x", space = "free",
+             labeller = labeller(roi = c("bhpp" = "HIP",
+                                         "lhpp" = "left\nHIP",
+                                         "rhpp" = "right\nHIP",
+                                         "a_hpp" = "anterior\nHIP",
+                                         "p_hpp" = "posterior\nHIP",
+                                         "la_hpp" = "l-a HIP",
+                                         "lp_hpp" = "l-p HIP",
+                                         "ra_hpp" = "r-a HIP",
+                                         "rp_hpp" = "r-p HIP",
+                                         "mpfc" = "mPFC"))) +
+  geom_point(data=r2n_allL.v, aes(x=cond, y=beta, fill=cond), position = position_dodge(width=0.8),
+             size=2, show.legend=F, color="gray90") +
+  geom_segment(data=filter(r2n_allW.v), inherit.aes = FALSE,
+               aes(x=1, y=filter(r2n_allW.v)$cons,
+                   xend=2, yend=filter(r2n_allW.v)$imm),
+               color="gray90") +
+  geom_errorbar(data=r2n_allG.v, aes(x=cond, y= beta.m, ymin=lower.se, ymax=upper.se), width=.2,
+                position=position_dodge(.8), color = "black") +
+  # geom_pointrange(data=r1_allG.p1, aes(x = cond, y=z.m, ymin = z.m-z.se, ymax = z.m+z.se),
+  #                 position = position_dodge(0.80), color = "darkred", size = 1, show.legend = FALSE) +
+  scale_x_discrete(labels=c("Cons","Imm")) +
+  scale_fill_manual(values = c("#F17402", "#2C57AA"), # c("#F17402", "#2C57AA"), c("#feb24c", "#91bfdb")
+                    labels = c("Consolidated", "Immediate")) +
+  # coord_cartesian(ylim = c(0, 0.6), clip = "on") +
+  labs(x = "Condition", y = "Difference in Beta Value") +
+  ggtitle("Synthetic Pattern") +
+  theme_bw(base_size = 18) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="bottom")
+r4.all.plot4
+```
+
+<br>
+
+combined LOC 의 통계 분석 결과는 아래와 같다.
+
+<br>
+
+```{r, echo=T}
+targ_roi = c("loc")
+r2n_allL.tmp <- r2n_allL %>% filter(roi %in% targ_roi)
+
+p_h1 <- r2n_allL.tmp %>% group_by(roi) %>% 
+  rstatix::pairwise_t_test(beta ~ cond, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- r2n_allL.tmp %>% group_by(roi) %>% 
+  rstatix::cohens_d(beta ~ cond, paired=T, ci = F) %>% 
+  dplyr::select(roi, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi", "group1", "group2")) %>% kable(digits=3)
+
+```
+
+<br>
+
+left & right LOC 의 통계 분석 결과는 아래와 같다.
+
+<br>
+
+```{r, echo=T}
+targ_roi = c("lloc", "rloc")
+
+r2n_allL.tmp <- r2n_allL %>% filter(roi %in% targ_roi)
+r2n.aov1 <- aov_ez(id="subj", dv="beta", data = r2n_allL.tmp, within = c("cond", "roi"))
+# summary(r2n.aov1)
+nice(r2n.aov1, es="pes") %>% kable(digits=2)
+```
+
+<br>
+
+```{r, echo=T}
+p_h1 <- r2n_allL.tmp %>% group_by(roi) %>% 
+  rstatix::pairwise_t_test(beta ~ cond, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- r2n_allL.tmp %>% group_by(roi) %>% 
+  rstatix::cohens_d(beta ~ cond, paired=T, ci = F) %>% 
+  dplyr::select(roi, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi", "group1", "group2")) %>% kable(digits=3)
+```
+
+<br>
+
+Posterior-Anterior Hippocampus, mPFC의 통계 분석 결과는 아래와 같다.
+
+<br>
+
+```{r, echo=T}
+targ_roi = c("p_hpp", "a_hpp", "mpfc")
+
+r2n_allL.tmp <- r2n_allL %>% filter(roi %in% targ_roi)
+r2n.aov1 <- aov_ez(id="subj", dv="beta", data = r2n_allL.tmp, within = c("cond", "roi"))
+# summary(r2n.aov1)
+nice(r2n.aov1, es="pes") %>% kable(digits=2)
+```
+
+<br>
+
+```{r, echo=T}
+p_h1 <- r2n_allL.tmp %>% group_by(roi) %>% 
+  rstatix::pairwise_t_test(beta ~ cond, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- r2n_allL.tmp %>% group_by(roi) %>% 
+  rstatix::cohens_d(beta ~ cond, paired=T, ci = F) %>% 
+  dplyr::select(roi, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi", "group1", "group2")) %>% kable(digits=3)
+```
+
+<br>
+
+****
+
+<br>
+
+
+### Results 3-1 - Representational Similarity - Main
+
+<br>
+
+세 번째 가설은 구조화된 표상으로 물체를 이루는 요소들이 뚜렷하게 표상됨에 따라, 요소들과 그 요소들 간의 결합 구조가 파악되어 이를 공유하는 물체들 간의 표상적 유사성이 증가한다는 것이었다. Consolidation이 요소들과 결합 규칙/관계를 공유하는 물체들 간의 표상적 유사성이 증가시키는지를 검증하기 위한 Representation Similarity Analysis 를 수행하였다.
+
+<br>
+
+2nd learning phase에서 획득된 각 물체들의 z-scored LOC t-stat 신경 패턴을 Consolidated 조건과 Immediate 조건으로 분할한 후, 각 조건 내에서 서로 간의 Pearson's correlation coefficient를 계산하였다. 이 coefficient 를 fisher의 z-transformed 한 후, 각 조건 내에서 평균화하였다. 이렇게 획득된 조건별 유사성 점수를 대상으로 조건과 ROI를 요인으로하는  repeated-measures analysis of variance (RM-ANOVA)를 수행하였다. 각 ROI에서 조건에 따른 유사성 점수를 아래에 요약하였다. 
+
+<br>
+
+
+
+```{r, collapse=TRUE}
+r3p1 <- read.csv("data/r3_pttDist_p1_ll.csv", header = T)
+
+r3 <- r3p1
+glimpse(r3, width = 70)
+
+# subj : 참가자 번호
+# cond : condtiion, consolidation vs. immediate
+# roi : 관심 상위 영역. rloc vs. lvwfa
+# D : 활성화 정도를 나타내는 D statistics
+
+r3_l <- r3
+r3_l$subj = factor(r3_l$subj)
+
+targ_roi<- c("loc", "lloc", "rloc", "pf", "lpf", "rpf", 
+             "lloc31", "rloc31",
+             "bhpp", "lhpp", "rhpp", "a_hpp", "p_hpp", 
+             "ra_hpp", "rp_hpp", "p_hpp", "a_hpp", 
+             "mpfc")
+targ_roi<- c("loc", "lloc", "rloc", 
+             "p_hpp", "a_hpp", "mpfc")
+r3_l <- r3_l %>% filter(roi %in% targ_roi)
+# r3_l <- r3_l %>% filter(subj!=99)
+
+r3_l <- r3_l %>% filter(cond !=3, )
+r3_l$ll
+r3_l$cond = factor(r3_l$cond, levels=c(1,2),labels=c("cons","imm")) 
+# r3_l$cond_ll = factor(r3_l$cond_ll, levels=c(1,2,3),labels=c("c1","c2","c12")) 
+r3_l$cond_ll <- factor(r3_l$cond_ll)
+r3_l$roi = factor(r3_l$roi, 
+                  levels=c("loc", "lloc", "rloc", 
+                           "p_hpp", "a_hpp", "mpfc"), 
+                  labels=c("loc", "lloc", "rloc", 
+                           "p_hpp", "a_hpp", "mpfc")) 
+r3_l <- r3_l %>% dplyr::select(subj,roi,cond,cond_ll,corrD)
+# r3_l$corrD <- 1-r3_l$corrD
+
+length(unique(r3_l$subj))
+
+# check number of trials for each condition/subj
+table(r3_l$subj)
+table(r3_l$cond, r3_l$subj)
+table(r3_l$cond_ll, r3_l$subj)
+table(r3_l$roi, r3_l$subj)
+
+```
+
+<br>
+  
+```{r, collapse=TRUE}
+# subject-level, long format
+r3_allL.1 <- r3_l %>% filter(cond_ll != 3)%>% 
+  group_by(subj, roi, cond) %>%
+  dplyr::summarise(D=mean(corrD)) %>%
+  ungroup()
+
+r3_allL.1$cond_ll <- 1
+
+r3_allL.2 <- r3_l %>% filter(cond_ll == 3) %>% 
+  group_by(subj, roi, cond) %>%
+  dplyr::summarise(D=mean(corrD)) %>%
+  ungroup()
+r3_allL.2$cond_ll <- 2
+
+r3_allL <- rbind(r3_allL.1, r3_allL.2)
+r3_allL$cond_ll <- factor(r3_allL$cond_ll, levels =c(1,2), labels = c("wn", "btw"))
+r3_allL <- r3_allL %>% filter(cond_ll == "wn")
+
+# subject-level, wide format
+r3_allW <- r3_allL %>% spread(key=cond, value = D)
+# r3_allW %>% filter(phase==1, roi =="loc") %>% kable(digits=2)
+
+r3_allW1 <- r3_allL %>% spread(key=roi, value=D)
+# r3_allW1 %>% kable(digits=2)
+
+r3_allW2 <- r3_allL %>% spread(key=cond, value=D)
+# r3_allW2 %>% filter(phase ==1, roi=="loc") %>% kable(digits=2)
+
+# summary table: grand mean
+r3_allG <- r3_allL %>% group_by(roi, cond, cond_ll) %>%
+  dplyr::summarise(D.m = mean(D), D.sd = sd(D)) %>%
+  ungroup()
+r3_allG$D.se <- Rmisc::summarySEwithin(data = r3_allL, measurevar = "D", 
+                                       idvar = "subj", withinvars = c("roi","cond","cond_ll"))$se
+r3_allG$D.ci <- Rmisc::summarySEwithin(data = r3_allL, measurevar = "D", 
+                                       idvar = "subj", withinvars = c("roi", "cond","cond_ll"))$ci
+r3_allG <- r3_allG %>% 
+  mutate(lower.ci = D.m-D.ci,
+         upper.ci = D.m+D.ci,
+         lower.se = D.m-D.se,
+         upper.se = D.m+D.se)
+
+targ_roi1 = c("loc", "lloc", "rloc", "p_hpp", "a_hpp", "mpfc")
+r3_allG %>% filter(roi %in% targ_roi1) %>% dplyr::select(roi, cond, D.m) %>%
+  spread(key=roi, value=D.m) %>% kable(digits=2)
+
+```
+
+<br>
+
+```{r, fig.width= 14, fig.height=10}
+targ_roi = c("loc")
+
+# phase 1
+r3_allL.p1 <- r3_allL %>% filter(cond != "intCond", roi %in% targ_roi)
+r3_allW.p1 <- r3_allW %>% filter(roi %in% targ_roi)
+r3_allG.p1 <- r3_allG %>% filter(cond != "intCond",  roi %in% targ_roi)
+r3.p1.all.plot1 <- ggplot(data=r3_allL.p1, aes(x=cond, y=D, fill=cond)) +
+  stat_summary(fun = mean, geom = "bar", position="dodge", 
+               na.rm = TRUE, alpha = .9, width = 0.8, size = 0.3, color='black') +
+  # geom_hline(yintercept=0, linetype='solid', color='black', alpha =1, size=1) +
+  facet_grid(.~roi, scales="free_x", space = "free",
+             labeller = labeller(roi = c("loc" = "LOC",
+                                         "lloc" = "left LOC",
+                                         "rloc" = "right LOC",
+                                         "pf" = "pF",
+                                         "lpf" = "left pF",
+                                         "rpf" = "right pF",
+                                         "lloc31" = "left LOC31",
+                                         "rloc31" = "right LOC31"))) +
+  geom_point(data=r3_allL.p1, aes(x=cond, y=D, fill=cond), position = position_dodge(width=0.8),
+             size=2, show.legend=F, color="gray90") +
+  geom_segment(data=filter(r3_allW.p1), inherit.aes = FALSE,
+               aes(x=1, y=filter(r3_allW.p1)$cons,
+                   xend=2, yend=filter(r3_allW.p1)$imm),
+               color="gray90") +
+  geom_errorbar(data=r3_allG.p1, aes(x=cond, y= D.m, ymin=lower.se, ymax=upper.se), width=.2,
+                position=position_dodge(.8), color = "black") +
+  # geom_pointrange(data=r3_allG.p1, aes(x = cond, y=D.m, ymin = D.m-D.se, ymax = D.m+D.se),
+  #                 position = position_dodge(0.80), color = "darkred", size = 1, show.legend = FALSE) +
+  # scale_x_discrete(labels=c("within","between")) +
+  scale_fill_manual(values = c("#F17402", "#2C57AA"), # c("#F17402", "#2C57AA"), c("#feb24c", "#91bfdb")
+                    labels = c("Consolidated", "Immediate")) +
+  coord_cartesian(ylim = c(0, 0.8), clip = "on") +
+  labs(x = "Condition", y = "Similarity (Zr)") +
+  ggtitle("Objects (Category)") +
+  theme_bw(base_size = 18) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="bottom")
+r3.p1.all.plot1
+
+
+targ_roi = c("lloc", "rloc")
+r3_allL.p1 <- r3_allL %>% filter(cond != "intCond", roi %in% targ_roi)
+r3_allW.p1 <- r3_allW %>% filter(roi %in% targ_roi)
+r3_allG.p1 <- r3_allG %>% filter(cond != "intCond", roi %in% targ_roi)
+r3.p1.all.plot1 <- ggplot(data=r3_allL.p1, aes(x=cond, y=D, fill=cond)) +
+  stat_summary(fun = mean, geom = "bar", position="dodge", 
+               na.rm = TRUE, alpha = .9, width = 0.8, size = 0.3, color='black') +
+  # geom_hline(yintercept=0, linetype='solid', color='black', alpha =1, size=1) +
+  facet_grid(.~roi, scales="free_x", space = "free",
+             labeller = labeller(roi = c("loc" = "LOC",
+                                         "lloc" = "left LOC",
+                                         "rloc" = "right LOC",
+                                         "pf" = "pF",
+                                         "lpf" = "left pF",
+                                         "rpf" = "right pF",
+                                         "lloc31" = "left LOC31",
+                                         "rloc31" = "right LOC31"))) +
+  geom_point(data=r3_allL.p1, aes(x=cond, y=D, fill=cond), position = position_dodge(width=0.8),
+             size=2, show.legend=F, color="gray90") +
+  geom_segment(data=filter(r3_allW.p1), inherit.aes = FALSE,
+               aes(x=1, y=filter(r3_allW.p1)$cons,
+                   xend=2, yend=filter(r3_allW.p1)$imm),
+               color="gray90") +
+  geom_errorbar(data=r3_allG.p1, aes(x=cond, y= D.m, ymin=lower.se, ymax=upper.se), width=.2,
+                position=position_dodge(.8), color = "black") +
+  # geom_pointrange(data=r3_allG.p1, aes(x = cond, y=D.m, ymin = D.m-D.se, ymax = D.m+D.se),
+  #                 position = position_dodge(0.80), color = "darkred", size = 1, show.legend = FALSE) +
+  # scale_x_discrete(labels=c("within","between")) +
+  scale_fill_manual(values = c("#F17402", "#2C57AA"), # c("#F17402", "#2C57AA"), c("#feb24c", "#91bfdb")
+                    labels = c("Consolidated", "Immediate")) +
+  coord_cartesian(ylim = c(0, 0.8), clip = "on") +
+  labs(x = "Condition", y = "Similarity (Zr)") +
+  ggtitle("Objects (Category)") +
+  theme_bw(base_size = 18) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="bottom")
+r3.p1.all.plot1
+
+
+targ_roi = c("p_hpp", "a_hpp", "mpfc")
+r3_allL.p1 <- r3_allL %>% filter(cond != "intCond",roi %in% targ_roi)
+r3_allW.p1 <- r3_allW %>% filter(roi %in% targ_roi)
+r3_allG.p1 <- r3_allG %>% filter(cond != "intCond", roi %in% targ_roi)
+r3.p1.all.plot1 <- ggplot(data=r3_allL.p1, aes(x=cond, y=D, fill=cond)) +
+  stat_summary(fun = mean, geom = "bar", position="dodge", 
+               na.rm = TRUE, alpha = .9, width = 0.8, size = 0.3, color='black') +
+#  geom_hline(yintercept=0, linetype='solid', color='black', alpha =1, size=1) +
+  facet_grid(.~roi, scales="free_x", space = "free",
+             labeller = labeller(roi = c("bhpp" = "HIP",
+                                         "lhpp" = "left\nHIP",
+                                         "rhpp" = "right\nHIP",
+                                         "a_hpp" = "anterior\nHIP",
+                                         "p_hpp" = "posterior\nHIP",
+                                         "a_hpp" = "l-a HIP",
+                                         "p_hpp" = "l-p HIP",
+                                         "ra_hpp" = "r-a HIP",
+                                         "rp_hpp" = "r-p HIP",
+                                         "mpfc" = "mPFC"))) +
+  geom_point(data=r3_allL.p1, aes(x=cond, y=D, fill=cond), position = position_dodge(width=0.8),
+             size=2, show.legend=F, color="gray90") +
+  geom_segment(data=filter(r3_allW.p1), inherit.aes = FALSE,
+               aes(x=1, y=filter(r3_allW.p1)$cons,
+                   xend=2, yend=filter(r3_allW.p1)$imm),
+               color="gray90") +
+  geom_errorbar(data=r3_allG.p1, aes(x=cond, y= D.m, ymin=lower.se, ymax=upper.se), width=.2,
+                position=position_dodge(.8), color = "black") +
+  # geom_pointrange(data=r3_allG.p1, aes(x = cond, y=D.m, ymin = D.m-D.se, ymax = D.m+D.se),
+  #                 position = position_dodge(0.80), color = "darkred", size = 1, show.legend = FALSE) +
+  # scale_x_discrete(labels=c("within","between")) +
+  scale_fill_manual(values = c("#F17402", "#2C57AA"), # c("#F17402", "#2C57AA"), c("#feb24c", "#91bfdb")
+                    labels = c("Consolidated", "Immediate")) +
+  # coord_cartesian(ylim = c(0, 0.8), clip = "on") +
+  labs(x = "Condition", y = "Similarity (Zr)") +
+  ggtitle("Objects (Category)") +
+  theme_bw(base_size = 18) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="bottom")
+r3.p1.all.plot1
+```
+
+<br>
+
+Combined LOC의 통계 분석 결과는 아래와 같다.
+
+<br>
+
+```{r, echo=T}
+targ_roi<- c("loc")
+r3_allL.p1 <- r3_allL %>% filter(cond !=  "intCond", roi %in% targ_roi)
+r3_allL.p1$cond <- factor(r3_allL.p1$cond)
+
+p_h1 <- r3_allL.p1 %>% group_by(roi) %>% 
+  rstatix::pairwise_t_test(D ~ cond, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- r3_allL.p1 %>% group_by(roi) %>% 
+  rstatix::cohens_d(D ~ cond, paired=T, ci = F) %>% 
+  dplyr::select(roi, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi","group1", "group2")) %>% kable(digits=3)
+```
+
+<br>
+
+left & right LOC의 통계 분석 결과는 아래와 같다.
+
+
+<br>
+
+```{r, echo=T}
+targ_roi = c("lloc", "rloc")
+r3_allL.p1 <- r3_allL %>% filter(roi %in% targ_roi,
+                                 cond !=  "intCond")
+r3.aov1 <- aov_ez(id="subj", dv="D", data = r3_allL.p1, within = c("cond","roi"))
+# summary(r3.aov1)
+nice(r3.aov1, es="pes") %>% kable(digits=2)
+```
+
+<br>
+
+```{r, echo=T}
+p_h1 <- r3_allL.p1 %>% group_by(roi) %>% 
+  rstatix::pairwise_t_test(D ~ cond, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- r3_allL.p1 %>% group_by(roi) %>% 
+  rstatix::cohens_d(D ~ cond, paired=T, ci = F) %>% 
+  dplyr::select(roi, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi", "group1", "group2")) %>% kable(digits=3)
+```
+
+<br>
+
+Posterior-Anterior Hippocampus와 mPFC의 결과는 아래와 같다.
+
+<br>
+
+```{r, echo=T}
+targ_roi = c("p_hpp", "a_hpp", "mpfc")
+r3_allL.p1 <- r3_allL %>% filter(roi %in% targ_roi,
+                                 cond !=  "intCond")
+r3.aov1 <- aov_ez(id="subj", dv="D", data = r3_allL.p1, within = c("cond","roi"))
+# summary(r3.aov1)
+nice(r3.aov1, es="pes") %>% kable(digits=2)
+```
+
+<br>
+
+```{r, echo=T}
+p_h1 <- r3_allL.p1 %>% group_by(roi) %>% 
+  rstatix::pairwise_t_test(D ~ cond, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- r3_allL.p1 %>% group_by(roi) %>% 
+  rstatix::cohens_d(D ~ cond, paired=T, ci = F) %>% 
+  dplyr::select(roi, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi", "group1", "group2")) %>% kable(digits=3)
+```
+
+<br>
+
+
+### Results 3-2 - Representational Similarity - Supplementary
+
+<br>
+
+각 조건에서 나타나는 표상적 유사성의 정도가 Consolidation에 의한 전반적인 차이가 아닌, 요소와 결합 규칙의 공유에 의한 것인지를 확인하기 위한 보조적 분석을 수행하였다. 각 조건을 구성하는 두 범주 각각에서 동일 범주 내의 물체들의 평균 유사성 점수를 동일한 절차로 획득하였고 이를 Within 조건으로 명명하였다. 그리고 두 범주 간에서 물체들 간의 유사성 점수를 유사한 절차로 획득하고 이를 Between 조건으로 명명하였다. 이를 통해 조건 (Consolidated vs. Immediate), ROI (6개), Type (Within vs. Between)의 세 가지 변인이 구성되었다. 
+
+<br>
+
+#### Results 3-2-1 - Within vs. Between
+
+<br>
+
+조건 (Consolidated vs. Immediate), ROI (6개), Type (Within vs. Between)을 요인으로 유사성 점수를 요약하였다.
+
+<br>
+
+```{r, collapse=TRUE}
+# subject-level, long format
+r3_allL.1 <- r3_l %>% filter(cond_ll != 3)%>% 
+  group_by(subj, roi, cond) %>%
+  dplyr::summarise(D=mean(corrD)) %>%
+  ungroup()
+
+r3_allL.1$cond_ll <- 1
+
+r3_allL.2 <- r3_l %>% filter(cond_ll == 3) %>% 
+  group_by(subj, roi, cond) %>%
+  dplyr::summarise(D=mean(corrD)) %>%
+  ungroup()
+r3_allL.2$cond_ll <- 2
+
+r3_allL <- rbind(r3_allL.1, r3_allL.2)
+r3_allL$cond_ll <- factor(r3_allL$cond_ll, levels =c(1,2), labels = c("wn", "btw"))
+# r3_allL %>% kable(digits=2)
+
+# subject-level, wide format
+r3_allW <- r3_allL %>% spread(key=cond_ll, value=D)
+
+# summary table: grand mean
+r3_allG <- r3_allL %>% group_by(roi, cond, cond_ll) %>%
+  dplyr::summarise(D.m = mean(D), D.sd = sd(D)) %>%
+  ungroup()
+r3_allG$D.se <- Rmisc::summarySEwithin(data = r3_allL, measurevar = "D", 
+                                       idvar = "subj", withinvars = c("roi","cond","cond_ll"))$se
+r3_allG$D.ci <- Rmisc::summarySEwithin(data = r3_allL, measurevar = "D", 
+                                       idvar = "subj", withinvars = c("roi", "cond","cond_ll"))$ci
+r3_allG <- r3_allG %>% 
+  mutate(lower.ci = D.m-D.ci,
+         upper.ci = D.m+D.ci,
+         lower.se = D.m-D.se,
+         upper.se = D.m+D.se)
+
+targ_roi1 = c("loc", "lloc", "rloc", "p_hpp", "a_hpp", "mpfc")
+r3_allG %>% filter(roi %in% targ_roi1) %>% dplyr::select(roi, cond, cond_ll, D.m) %>%
+  spread(key=roi, value=D.m) %>% kable(digits=2)
+
+```
+
+<br>
+
+```{r, fig.width= 14, fig.height=10}
+targ_roi = c("loc")
+r3_allL.p1 <- r3_allL %>% filter(cond != "intCond", roi %in% targ_roi)
+r3_allW.p1 <- r3_allW %>% filter(roi %in% targ_roi)
+r3_allG.p1 <- r3_allG %>% filter(cond != "intCond", roi %in% targ_roi)
+r3.p1.all.plot1 <- ggplot(data=r3_allL.p1, aes(x=cond, y=D, fill=cond_ll)) +
+  stat_summary(fun = mean, geom = "bar", position="dodge", 
+               na.rm = TRUE, alpha = .9, width = 0.8, size = 0.3, color='black') +
+  # geom_hline(yintercept=0, linetype='solid', color='black', alpha =1, size=1) +
+  facet_grid(.~roi, scales="free_x", space = "free",
+             labeller = labeller(roi = c("loc" = "LOC",
+                                         "lloc" = "left LOC",
+                                         "rloc" = "right LOC",
+                                         "pf" = "pF",
+                                         "lpf" = "left pF",
+                                         "rpf" = "right pF",
+                                         "lloc31" = "left LOC31",
+                                         "rloc31" = "right LOC31"))) +
+  geom_point(data=r3_allL.p1, aes(x=cond, y=D, fill=cond_ll), position = position_dodge(width=0.8),
+             size=2, show.legend=F, color="gray90") +
+  geom_segment(data=filter(r3_allW.p1, cond =="cons"), inherit.aes = FALSE,
+               aes(x=0.8, y=filter(r3_allW.p1, cond =="cons")$wn,
+                   xend=1.2, yend=filter(r3_allW.p1, cond =="cons")$btw),
+               color="gray90") +
+  geom_segment(data=filter(r3_allW.p1, cond =="imm"), inherit.aes = FALSE,
+               aes(x=1.8, y=filter(r3_allW.p1, cond =="imm")$wn,
+                   xend=2.2, yend=filter(r3_allW.p1, cond =="imm")$btw),
+               color="gray90") +  
+  geom_errorbar(data=r3_allG.p1, aes(x=cond, y= D.m, ymin=lower.se, ymax=upper.se), width=.2,
+                position=position_dodge(.8), color = "black") +
+  scale_x_discrete(labels=c("Consolidated","Immediate")) +
+  scale_fill_manual(values = c("#feb24c", "#91bfdb"),
+                    labels = c("Within", "Between")) +
+  coord_cartesian(ylim = c(0, 0.8), clip = "on") +
+  labs(x = "Condition", y = "Similarity (Zr)") +
+  ggtitle("Objects (Category)") +
+  theme_bw(base_size = 18) +
+  theme(#axis.text.x=element_blank(),
+        #axis.ticks.x=element_blank(),
+        axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="bottom")
+r3.p1.all.plot1
+
+targ_roi = c("lloc", "rloc")
+r3_allL.p1 <- r3_allL %>% filter(cond != "intCond", roi %in% targ_roi)
+r3_allW.p1 <- r3_allW %>% filter(roi %in% targ_roi)
+r3_allG.p1 <- r3_allG %>% filter(cond != "intCond", roi %in% targ_roi)
+r3.p1.all.plot1 <- ggplot(data=r3_allL.p1, aes(x=cond, y=D, fill=cond_ll)) +
+  stat_summary(fun = mean, geom = "bar", position="dodge", 
+               na.rm = TRUE, alpha = .9, width = 0.8, size = 0.3, color='black') +
+  # geom_hline(yintercept=0, linetype='solid', color='black', alpha =1, size=1) +
+  facet_grid(.~roi, scales="free_x", space = "free",
+             labeller = labeller(roi = c("loc" = "LOC",
+                                         "lloc" = "left LOC",
+                                         "rloc" = "right LOC",
+                                         "pf" = "pF",
+                                         "lpf" = "left pF",
+                                         "rpf" = "right pF",
+                                         "lloc31" = "left LOC31",
+                                         "rloc31" = "right LOC31"))) +
+  geom_point(data=r3_allL.p1, aes(x=cond, y=D, fill=cond_ll), position = position_dodge(width=0.8),
+             size=2, show.legend=F, color="gray90") +
+  geom_segment(data=filter(r3_allW.p1, cond =="cons"), inherit.aes = FALSE,
+               aes(x=0.8, y=filter(r3_allW.p1, cond =="cons")$wn,
+                   xend=1.2, yend=filter(r3_allW.p1, cond =="cons")$btw),
+               color="gray90") +
+  geom_segment(data=filter(r3_allW.p1, cond =="imm"), inherit.aes = FALSE,
+               aes(x=1.8, y=filter(r3_allW.p1, cond =="imm")$wn,
+                   xend=2.2, yend=filter(r3_allW.p1, cond =="imm")$btw),
+               color="gray90") +  
+  geom_errorbar(data=r3_allG.p1, aes(x=cond, y= D.m, ymin=lower.se, ymax=upper.se), width=.2,
+                position=position_dodge(.8), color = "black") +
+  scale_x_discrete(labels=c("Consolidated","Immediate")) +
+  scale_fill_manual(values = c("#feb24c", "#91bfdb"),
+                    labels = c("Within", "Between")) +
+  coord_cartesian(ylim = c(0, 0.8), clip = "on") +
+  labs(x = "Condition", y = "Similarity (Zr)") +
+  ggtitle("Objects (Category)") +
+  theme_bw(base_size = 18) +
+  theme(#axis.text.x=element_blank(),
+        #axis.ticks.x=element_blank(),
+        axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="bottom")
+r3.p1.all.plot1
+
+targ_roi = c("p_hpp", "a_hpp", "mpfc")
+r3_allL.p1 <- r3_allL %>% filter(cond != "intCond", roi %in% targ_roi)
+r3_allW.p1 <- r3_allW %>% filter(roi %in% targ_roi)
+r3_allG.p1 <- r3_allG %>% filter(cond != "intCond", roi %in% targ_roi)
+r3.p1.all.plot2 <- ggplot(data=r3_allL.p1, aes(x=cond, y=D, fill=cond_ll)) +
+  stat_summary(fun = mean, geom = "bar", position="dodge", 
+               na.rm = TRUE, alpha = .9, width = 0.8, size = 0.3, color='black') +
+  # geom_hline(yintercept=0, linetype='solid', color='black', alpha =1, size=1) +
+  facet_grid(.~roi, scales="free_x", space = "free",
+             labeller = labeller(roi = c("bhpp" = "HIP",
+                                         "lhpp" = "left\nHIP",
+                                         "rhpp" = "right\nHIP",
+                                         "a_hpp" = "anterior\nHIP",
+                                         "p_hpp" = "posterior\nHIP",
+                                         "a_hpp" = "l-a HIP",
+                                         "p_hpp" = "l-p HIP",
+                                         "ra_hpp" = "r-a HIP",
+                                         "rp_hpp" = "r-p HIP",
+                                         "mpfc" = "mPFC"))) +
+  geom_point(data=r3_allL.p1, aes(x=cond, y=D, fill=cond_ll), position = position_dodge(width=0.8),
+             size=2, show.legend=F, color="gray90") +
+  geom_segment(data=filter(r3_allW.p1, cond =="cons"), inherit.aes = FALSE,
+               aes(x=0.8, y=filter(r3_allW.p1, cond =="cons")$wn,
+                   xend=1.2, yend=filter(r3_allW.p1, cond =="cons")$btw),
+               color="gray90") +
+  geom_segment(data=filter(r3_allW.p1, cond =="imm"), inherit.aes = FALSE,
+               aes(x=1.8, y=filter(r3_allW.p1, cond =="imm")$wn,
+                   xend=2.2, yend=filter(r3_allW.p1, cond =="imm")$btw),
+               color="gray90") +  
+  geom_errorbar(data=r3_allG.p1, aes(x=cond, y= D.m, ymin=lower.se, ymax=upper.se), width=.2,
+                position=position_dodge(.8), color = "black") +
+  scale_x_discrete(labels=c("Consolidated","Immediate")) +
+  scale_fill_manual(values = c("#feb24c", "#91bfdb"),
+                    labels = c("Within", "Between")) +
+  # coord_cartesian(ylim = c(0, 0.8), clip = "on") +
+  labs(x = "Condition", y = "Similarity (Zr)") +
+  ggtitle("Objects (Category)") +
+  theme_bw(base_size = 18) +
+  theme(#axis.text.x=element_blank(),
+        #axis.ticks.x=element_blank(),
+        axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="bottom")
+r3.p1.all.plot2
+```
+
+<br>
+
+Combined LOC의 통계 분석 결과는 아래와 같다.
+
+<br>
+
+```{r, echo=T}
+targ_roi = c("loc")
+r3_allL.p1 <- r3_allL %>% filter(roi %in% targ_roi,
+                                 cond !=  "intCond")
+r3.aov1 <- aov_ez(id="subj", dv="D", data = r3_allL.p1, within = c("cond","cond_ll"))
+# summary(r3.aov1)
+nice(r3.aov1, es="pes") %>% kable(digits=2)
+```
+
+<br>
+
+```{r, echo=T}
+p_h1 <- r3_allL.p1 %>% group_by(roi, cond) %>% 
+  rstatix::pairwise_t_test(D ~ cond_ll, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, cond, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- r3_allL.p1 %>% group_by(roi, cond) %>% 
+  rstatix::cohens_d(D ~ cond_ll, paired=T, ci = F) %>% 
+  dplyr::select(roi, cond, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi","cond", "group1", "group2")) %>% kable(digits=3)
+
+p_h1 <- r3_allL.p1 %>% group_by(roi, cond_ll) %>% 
+  rstatix::pairwise_t_test(D ~ cond, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, cond_ll, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+
+p_h2 <- r3_allL.p1 %>% group_by(roi, cond_ll) %>% 
+  rstatix::cohens_d(D ~ cond, paired=T, ci = F) %>% 
+  dplyr::select(roi, cond_ll, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi","cond_ll", "group1", "group2")) %>% kable(digits=3)
+```
+
+<br>
+
+left & right LOC의 통계 분석 결과는 아래와 같다.
+
+<br>
+
+
+```{r, echo=T}
+targ_roi = c("lloc", "rloc")
+r3_allL.p1 <- r3_allL %>% filter(roi %in% targ_roi,
+                                 cond !=  "intCond")
+r3.aov1 <- aov_ez(id="subj", dv="D", data = r3_allL.p1, within = c("cond","cond_ll", "roi"))
+# summary(r3.aov1)
+nice(r3.aov1, es="pes") %>% kable(digits=2)
+```
+
+<br>
+
+```{r, echo=T}
+p_h1 <- r3_allL.p1 %>% group_by(roi, cond) %>% 
+  rstatix::pairwise_t_test(D ~ cond_ll, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, cond, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- r3_allL.p1 %>% group_by(roi, cond) %>% 
+  rstatix::cohens_d(D ~ cond_ll, paired=T, ci = F) %>% 
+  dplyr::select(roi, cond, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi","cond", "group1", "group2")) %>% kable(digits=3)
+
+p_h1 <- r3_allL.p1 %>% group_by(roi, cond_ll) %>% 
+  rstatix::pairwise_t_test(D ~ cond, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, cond_ll, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+
+p_h2 <- r3_allL.p1 %>% group_by(roi, cond_ll) %>% 
+  rstatix::cohens_d(D ~ cond, paired=T, ci = F) %>% 
+  dplyr::select(roi, cond_ll, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi","cond_ll", "group1", "group2")) %>% kable(digits=3)
+```
+
+<br>
+
+Posterior-Anterior Hippocampus와 mPFC의 결과는 아래와 같다.
+
+<br>
+
+
+```{r, echo=T}
+targ_roi = c("p_hpp", "a_hpp","mpfc")
+r3_allL.p1 <- r3_allL %>% filter(roi %in% targ_roi,
+                                 cond !=  "intCond")
+r3.aov1 <- aov_ez(id="subj", dv="D", data = r3_allL.p1, within = c("cond", "cond_ll", "roi"))
+# summary(r3.aov1)
+nice(r3.aov1, es="pes") %>% kable(digits=2)
+```
+
+<br>
+
+```{r, echo=T}
+p_h1 <- r3_allL.p1 %>% group_by(roi, cond) %>% 
+  rstatix::pairwise_t_test(D ~ cond_ll, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, cond, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- r3_allL.p1 %>% group_by(roi, cond) %>% 
+  rstatix::cohens_d(D ~ cond_ll, paired=T, ci = F) %>% 
+  dplyr::select(roi, cond, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi","cond", "group1", "group2")) %>% kable(digits=3)
+
+p_h1 <- r3_allL.p1 %>% group_by(roi, cond_ll) %>% 
+  rstatix::pairwise_t_test(D ~ cond, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, cond_ll, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+
+p_h2 <- r3_allL.p1 %>% group_by(roi, cond_ll) %>% 
+  rstatix::cohens_d(D ~ cond, paired=T, ci = F) %>% 
+  dplyr::select(roi, cond_ll, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi","cond_ll", "group1", "group2")) %>% kable(digits=3)
+
+```
+
+<br>
+
+#### Results 3-2-2 - Within-Between Difference
+
+<br>
+
+상호 작용을 확인하기 위해 조건 (Consolidated vs. Immediate)과 ROI (6개)를 요인으로 Within-Between Difference를 요약하였다.
+
+<br>
+
+```{r, collapse=TRUE}
+r3p1 <- read.csv("data/r3_pttDist_p1_ll.csv", header = T)
+
+r3 <- r3p1
+glimpse(r3, width = 70)
+
+# subj : 참가자 번호
+# cond : condtiion, consolidation vs. immediate
+# roi : 관심 상위 영역. rloc vs. lvwfa
+# D : 활성화 정도를 나타내는 D statistics
+# phase : phase 1 & 2
+
+r3_l <- r3
+r3_l$subj = factor(r3_l$subj)
+
+targ_roi<- c("loc", "lloc", "rloc", "pf", "lpf", "rpf", 
+             "lloc31", "rloc31",
+             "bhpp", "lhpp", "rhpp", "a_hpp", "p_hpp", 
+             "ra_hpp", "rp_hpp", "p_hpp", "a_hpp", 
+             "mpfc")
+targ_roi<- c("loc", "lloc", "rloc", 
+             "p_hpp", "a_hpp", "mpfc")
+r3_l <- r3_l %>% filter(roi %in% targ_roi)
+r3_l <- r3_l %>% filter(cond !=3)
+
+r3_l$cond = factor(r3_l$cond, levels=c(1,2),labels=c("cons","imm")) 
+r3_l$roi = factor(r3_l$roi, 
+                  levels=c("loc", "lloc", "rloc", 
+                           "p_hpp", "a_hpp", "mpfc"), 
+                  labels=c("loc", "lloc", "rloc", 
+                           "p_hpp", "a_hpp", "mpfc")) 
+r3_l <- r3_l %>% dplyr::select(subj,roi,cond,cond_ll,corrD)
+length(unique(r3_l$subj))
+
+# check number of trials for each condition/subj
+table(r3_l$subj)
+table(r3_l$cond, r3_l$subj)
+table(r3_l$cond_ll, r3_l$subj)
+table(r3_l$roi, r3_l$subj)
+
+```
+
+<br>
+  
+```{r, collapse=TRUE}
+# subject-level, long format
+r3_allL.1 <- r3_l %>% filter(cond_ll != 3)%>% 
+  group_by(subj, roi, cond) %>%
+  dplyr::summarise(D=mean(corrD)) %>%
+  ungroup()
+
+r3_allL.1$cond_ll <- 1
+
+r3_allL.2 <- r3_l %>% filter(cond_ll == 3) %>% 
+  group_by(subj,roi, cond) %>%
+  dplyr::summarise(D=mean(corrD)) %>%
+  ungroup()
+r3_allL.2$cond_ll <- 2
+
+r3_allL <- rbind(r3_allL.1, r3_allL.2)
+r3_allL$cond_ll <- factor(r3_allL$cond_ll, levels =c(1,2), labels = c("wn", "btw"))
+r3_allL <- r3_allL %>% spread(key = cond_ll, value = D) %>% 
+  mutate(D = wn - btw) %>% dplyr::select(subj, roi, cond, D)
+
+# subject-level, wide format
+r3_allW <- r3_allL %>% spread(key=cond, value = D)
+
+# summary table: grand mean
+r3_allG <- r3_allL %>% group_by(roi, cond) %>%
+  dplyr::summarise(D.m = mean(D), D.sd = sd(D)) %>%
+  ungroup()
+r3_allG$D.se <- Rmisc::summarySEwithin(data = r3_allL, measurevar = "D", 
+                                       idvar = "subj", withinvars = c("roi","cond"))$se
+r3_allG$D.ci <- Rmisc::summarySEwithin(data = r3_allL, measurevar = "D", 
+                                       idvar = "subj", withinvars = c("roi", "cond"))$ci
+r3_allG <- r3_allG %>% 
+  mutate(lower.ci = D.m-D.ci,
+         upper.ci = D.m+D.ci,
+         lower.se = D.m-D.se,
+         upper.se = D.m+D.se)
+
+targ_roi1 = c("loc", "lloc", "rloc", "p_hpp", "a_hpp", "mpfc")
+r3_allG %>% filter(roi %in% targ_roi1) %>% dplyr::select(roi, cond, D.m) %>%
+  spread(key=roi, value=D.m) %>% kable(digits=3)
+
+```
+
+<br>
+
+```{r, fig.width= 14, fig.height=10}
+targ_roi = c("loc")
+r3_allL.p1 <- r3_allL %>% filter(cond != "intCond", roi %in% targ_roi)
+r3_allW.p1 <- r3_allW %>% filter(roi %in% targ_roi)
+r3_allG.p1 <- r3_allG %>% filter(cond != "intCond", roi %in% targ_roi)
+r3.p1.all.plot1 <- ggplot(data=r3_allL.p1, aes(x=cond, y=D, fill=cond)) +
+  stat_summary(fun = mean, geom = "bar", position="dodge", 
+               na.rm = TRUE, alpha = .9, width = 0.8, size = 0.3, color='black') +
+  geom_hline(yintercept=0, linetype='solid', color='black', alpha =1, size=1) +
+  facet_grid(.~roi, scales="free_x", space = "free",
+             labeller = labeller(roi = c("loc" = "LOC",
+                                         "lloc" = "left LOC",
+                                         "rloc" = "right LOC",
+                                         "pf" = "pF",
+                                         "lpf" = "left pF",
+                                         "rpf" = "right pF",
+                                         "lloc31" = "left LOC31",
+                                         "rloc31" = "right LOC31"))) +
+  geom_point(data=r3_allL.p1, aes(x=cond, y=D, fill=cond), position = position_dodge(width=0.8),
+             size=2, show.legend=F, color="gray90") +
+  geom_segment(data=filter(r3_allW.p1), inherit.aes = FALSE,
+               aes(x=1, y=filter(r3_allW.p1)$cons,
+                   xend=2, yend=filter(r3_allW.p1)$imm),
+               color="gray90") +
+  geom_errorbar(data=r3_allG.p1, aes(x=cond, y= D.m, ymin=lower.se, ymax=upper.se), width=.2,
+                position=position_dodge(.8), color = "black") +
+  # geom_pointrange(data=r3_allG.p1, aes(x = cond, y=D.m, ymin = D.m-D.se, ymax = D.m+D.se),
+  #                 position = position_dodge(0.80), color = "darkred", size = 1, show.legend = FALSE) +
+  # scale_x_discrete(labels=c("within","between")) +
+  scale_fill_manual(values = c("#F17402", "#2C57AA"), # c("#F17402", "#2C57AA"), c("#feb24c", "#91bfdb")
+                    labels = c("Consolidated", "Immediate")) +
+  # coord_cartesian(ylim = c(0, 0.8), clip = "on") +
+  labs(x = "Condition", y = "Difference in Similarity (Zr)") +
+  ggtitle("Objects") +
+  theme_bw(base_size = 18) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="bottom")
+r3.p1.all.plot1
+
+targ_roi = c("lloc","rloc")
+r3_allL.p1 <- r3_allL %>% filter(cond != "intCond", roi %in% targ_roi)
+r3_allW.p1 <- r3_allW %>% filter(roi %in% targ_roi)
+r3_allG.p1 <- r3_allG %>% filter(cond != "intCond", roi %in% targ_roi)
+r3.p1.all.plot1 <- ggplot(data=r3_allL.p1, aes(x=cond, y=D, fill=cond)) +
+  stat_summary(fun = mean, geom = "bar", position="dodge", 
+               na.rm = TRUE, alpha = .9, width = 0.8, size = 0.3, color='black') +
+  geom_hline(yintercept=0, linetype='solid', color='black', alpha =1, size=1) +
+  facet_grid(.~roi, scales="free_x", space = "free",
+             labeller = labeller(roi = c("loc" = "LOC",
+                                         "lloc" = "left LOC",
+                                         "rloc" = "right LOC",
+                                         "pf" = "pF",
+                                         "lpf" = "left pF",
+                                         "rpf" = "right pF",
+                                         "lloc31" = "left LOC31",
+                                         "rloc31" = "right LOC31"))) +
+  geom_point(data=r3_allL.p1, aes(x=cond, y=D, fill=cond), position = position_dodge(width=0.8),
+             size=2, show.legend=F, color="gray90") +
+  geom_segment(data=filter(r3_allW.p1), inherit.aes = FALSE,
+               aes(x=1, y=filter(r3_allW.p1)$cons,
+                   xend=2, yend=filter(r3_allW.p1)$imm),
+               color="gray90") +
+  geom_errorbar(data=r3_allG.p1, aes(x=cond, y= D.m, ymin=lower.se, ymax=upper.se), width=.2,
+                position=position_dodge(.8), color = "black") +
+  # geom_pointrange(data=r3_allG.p1, aes(x = cond, y=D.m, ymin = D.m-D.se, ymax = D.m+D.se),
+  #                 position = position_dodge(0.80), color = "darkred", size = 1, show.legend = FALSE) +
+  # scale_x_discrete(labels=c("within","between")) +
+  scale_fill_manual(values = c("#F17402", "#2C57AA"), # c("#F17402", "#2C57AA"), c("#feb24c", "#91bfdb")
+                    labels = c("Consolidated", "Immediate")) +
+  # coord_cartesian(ylim = c(0, 0.8), clip = "on") +
+  labs(x = "Condition", y = "Difference in Similarity (Zr)") +
+  ggtitle("Objects") +
+  theme_bw(base_size = 18) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="bottom")
+r3.p1.all.plot1
+
+targ_roi = c("p_hpp", "a_hpp", "mpfc")
+r3_allL.p1 <- r3_allL %>% filter(cond != "intCond", roi %in% targ_roi)
+r3_allW.p1 <- r3_allW %>% filter(roi %in% targ_roi)
+r3_allG.p1 <- r3_allG %>% filter(cond != "intCond", roi %in% targ_roi)
+r3.p1.all.plot1 <- ggplot(data=r3_allL.p1, aes(x=cond, y=D, fill=cond)) +
+  stat_summary(fun = mean, geom = "bar", position="dodge", 
+               na.rm = TRUE, alpha = .9, width = 0.8, size = 0.3, color='black') +
+  geom_hline(yintercept=0, linetype='solid', color='black', alpha =1, size=1) +
+  facet_grid(.~roi, scales="free_x", space = "free",
+             labeller = labeller(roi = c("bhpp" = "HIP",
+                                         "lhpp" = "left\nHIP",
+                                         "rhpp" = "right\nHIP",
+                                         "a_hpp" = "anterior\nHIP",
+                                         "p_hpp" = "posterior\nHIP",
+                                         "a_hpp" = "l-a HIP",
+                                         "p_hpp" = "l-p HIP",
+                                         "ra_hpp" = "r-a HIP",
+                                         "rp_hpp" = "r-p HIP",
+                                         "mpfc" = "mPFC"))) +
+  geom_point(data=r3_allL.p1, aes(x=cond, y=D, fill=cond), position = position_dodge(width=0.8),
+             size=2, show.legend=F, color="gray90") +
+  geom_segment(data=filter(r3_allW.p1), inherit.aes = FALSE,
+               aes(x=1, y=filter(r3_allW.p1)$cons,
+                   xend=2, yend=filter(r3_allW.p1)$imm),
+               color="gray90") +
+  geom_errorbar(data=r3_allG.p1, aes(x=cond, y= D.m, ymin=lower.se, ymax=upper.se), width=.2,
+                position=position_dodge(.8), color = "black") +
+  # scale_x_discrete(labels=c("within","between")) +
+  scale_fill_manual(values = c("#F17402", "#2C57AA"), # c("#F17402", "#2C57AA"), c("#feb24c", "#91bfdb")
+                    labels = c("Consolidated", "Immediate")) +
+  # coord_cartesian(ylim = c(0, 0.8), clip = "on") +
+  labs(x = "Condition", y = "Difference in Similarity (Zr)") +
+  ggtitle("Objects") +
+  theme_bw(base_size = 18) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title = element_text(face = "bold", size = 16, color = "black"),
+        axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+        axis.line=element_line(),
+        strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+        strip.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.spacing=unit(1, "lines"),
+        plot.margin = margin(1, 0.3, 1, 0.3, "cm"), 
+        legend.title = element_blank(),
+        legend.position="bottom")
+r3.p1.all.plot1
+
+```
+
+<br>
+
+Combined LOC의 통계 분석 결과는 아래와 같다.
+
+<br>
+
+```{r, echo=T}
+targ_roi = c("loc")
+r3_allL.p1 <- r3_allL %>% filter(roi %in% targ_roi,
+                                 cond !=  "intCond")
+
+p_h1 <- r3_allL.p1 %>% group_by(roi) %>% 
+  rstatix::pairwise_t_test(D ~ cond, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- r3_allL.p1 %>%group_by(roi) %>% 
+  rstatix::cohens_d(D ~ cond, paired=T, ci = F) %>% 
+  dplyr::select(roi, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi","group1", "group2")) %>% kable(digits=3)
+
+```
+
+
+<br>
+
+left & right LOC의 통계 분석 결과는 아래와 같다.
+
+<br>
+
+```{r, echo=T}
+targ_roi = c("lloc", "rloc")
+r3_allL.p1 <- r3_allL %>% filter(roi %in% targ_roi,
+                                 cond !=  "intCond")
+r3.aov1 <- aov_ez(id="subj", dv="D", data = r3_allL.p1, within = c("cond","roi"))
+# summary(r3.aov1)
+nice(r3.aov1, es="pes") %>% kable(digits=2)
+```
+
+<br>
+
+```{r, echo=T}
+p_h1 <- r3_allL.p1 %>% group_by(roi) %>% 
+  rstatix::pairwise_t_test(D ~ cond, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- r3_allL.p1 %>% group_by(roi) %>% 
+  rstatix::cohens_d(D ~ cond, paired=T, ci = F) %>% 
+  dplyr::select(roi, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi",  "group1", "group2")) %>% kable(digits=3)
+```
+
+<br>
+
+Posterior-Anterior Hippocampus와 mPFC의 결과는 아래와 같다.
+
+
+<br>
+
+```{r, echo=T}
+targ_roi = c("p_hpp", "a_hpp","mpfc")
+
+r3_allL.p1 <- r3_allL %>% filter(roi %in% targ_roi,
+                                 cond !=  "intCond")
+r3.aov1 <- aov_ez(id="subj", dv="D", data = r3_allL.p1, within = c("cond",  "roi"))
+# summary(r3.aov1)
+nice(r3.aov1, es="pes") %>% kable(digits=2)
+```
+
+<br>
+
+```{r, echo=T}
+p_h1 <- r3_allL.p1 %>% group_by(roi) %>% 
+  rstatix::pairwise_t_test(D ~ cond, 
+                           p.adjust.method="bonferroni", 
+                           paired=T, detailed=T) %>% 
+  dplyr::select(roi, group1, group2, estimate, conf.low, conf.high, df, statistic, p.adj, p.adj.signif) 
+p_h2 <- r3_allL.p1 %>% group_by(roi) %>% 
+  rstatix::cohens_d(D ~ cond, paired=T, ci = F) %>% 
+  dplyr::select(roi, group1, group2, effsize, magnitude)
+merge(p_h1, p_h2, by=c("roi",  "group1", "group2")) %>% kable(digits=3)
+```
+
+<br>
+
+****
+
+<br>
+
+### Results 4. Subject-Level Correlation
+
+<br>
+
+Results 1-3에서 Consolidation이 새로운 물체의 구조화된 표상을 촉진항 나타날 수 있는 세 가지 결과를 확인하였다. Immediate 조건 범주에 비해 Consolidated 조건 범주의 새로운 물체는 더 높은 LOC 활성화를 보였고, 물체의 신경 패턴이 구성 요소의 신경 패턴으로 설명되는 정도가 더 크게 나타났다. 또 구성 요소와 결합 관계를 공유하는 이러한 물체 범주들은 Consolidated 조건에서 Immediate 조건보다 더 높은 표상적 유사성을 보였다. 이 결과가 실제로 구조화된 표상으로 인한 것이고 이러한 효과가 Consolidation에 의해 촉진된 것이라면 세 가지 분석의 측정치 사이에 정적 관계를 기대할 수 있다. 이를 검증하기 위해 세 가지 결과 사이의 상관 관계를 분석하였다. 각 참가자의 3가지 측정치에서 Consolidated 조건과 Immediate 조건의 차이 점수를 구성한 후, 참가자 수준에서 Pearson 상관관계로 세 측정치 간의 관계를 검정하였다
+
+<br>
+
+
+```{r, collapse=TRUE}
+## activation
+r1p1 <- read.csv("data/r1_p1_sum.csv", header = T)
+r1_l <- r1p1
+r1_l$subj = factor(r1_l$subj)
+
+targ_roi<- c("loc", "lloc", "rloc", 
+            "p_hpp", "a_hpp", 
+             "mpfc")
+
+r1_l <- r1_l %>% filter(roi %in% targ_roi)
+# r1_l <- r1_l %>% filter(subj!=99)
+
+r1_l$cond = factor(r1_l$cond, levels=c("cons","imm"),labels=c("cons","imm")) 
+r1_l$roi = factor(r1_l$roi, 
+                  levels=c("loc","lloc","rloc",
+                           "pf", "lpf", "rpf", "lloc31","rloc31",
+                           "bhpp","lhpp","rhpp", 
+                           "a_hpp", "p_hpp","la_hpp", "lp_hpp", 
+                           "ra_hpp", "rp_hpp", "mpfc"), 
+                  labels=c("loc","lloc","rloc","pf", "lpf", "rpf", 
+                           "lloc31","rloc31",
+                           "bhpp","lhpp","rhpp", 
+                           "a_hpp", "p_hpp","la_hpp", "lp_hpp", 
+                           "ra_hpp", "rp_hpp", "mpfc")) 
+r1_l <- r1_l %>% dplyr::select(subj,roi,cond,z)
+
+## Constituent Explainability
+r2n <- read.csv("data/r2_glmfit_sum.csv", header = T)
+glimpse(r2n, width = 70)
+
+
+r2n_l <- r2n
+r2n_l$subj = factor(r2n_l$subj)
+r2n_l$cond = factor(r2n_l$cond, levels=c(1,2),labels=c("cons","imm")) 
+
+targ_roi<- c("loc", "lloc", "rloc", 
+            "p_hpp", "a_hpp", 
+             "mpfc")
+r2n_l <- r2n_l %>% filter(roi %in% targ_roi)
+
+r2n_l$roi = factor(r2n_l$roi, 
+                   levels=c("loc","lloc","rloc","pf", "lpf", "rpf", 
+                            "lloc31","rloc31",
+                            "bhpp","lhpp","rhpp", "a_hpp", "p_hpp","la_hpp", "lp_hpp", 
+                            "ra_hpp", "rp_hpp", "mpfc"), 
+                   labels=c("loc","lloc","rloc","pf", "lpf", "rpf", "lloc31","rloc31",
+                            "bhpp","lhpp","rhpp", "a_hpp", "p_hpp","la_hpp", "lp_hpp", 
+                            "ra_hpp", "rp_hpp", "mpfc")) 
+r2n_l$b_s <- r2n_l$beta_sum # sum of two ptt
+r2n_l$b_m <- r2n_l$beta_mean # mean of two ptt
+r2n_l <- r2n_l %>% dplyr::select(subj,roi,cond, b_m, b_s)
+
+## Representational Similarity
+r3p1 <- read.csv("data/r3_pttDist_p1_cond.csv", header = T)
+r3_l <- r3p1
+r3_l$subj = factor(r3_l$subj)
+
+targ_roi<- c("loc", "lloc", "rloc", 
+            "p_hpp", "a_hpp", 
+             "mpfc")
+r3_l <- r3_l %>% filter(roi %in% targ_roi)
+r3_l$cond = factor(r3_l$cond, levels=c(1,2,3),labels=c("cons","imm","intCond")) 
+r3_l$roi = factor(r3_l$roi, 
+                  levels=c("loc","lloc","rloc","pf", "lpf", "rpf", 
+                           "lloc31","rloc31",
+                           "bhpp","lhpp","rhpp", "a_hpp", "p_hpp","la_hpp", "lp_hpp", 
+                           "ra_hpp", "rp_hpp", "mpfc"), 
+                  labels=c("loc","lloc","rloc","pf", "lpf", "rpf", 
+                           "lloc31","rloc31",
+                           "bhpp","lhpp","rhpp", "a_hpp", "p_hpp","la_hpp", "lp_hpp", 
+                           "ra_hpp", "rp_hpp", "mpfc")) 
+r3_l <- r3_l %>% filter(cond != "intCond") %>%  dplyr::select(subj,roi,cond,corrD)
+
+r1_l_1 <- r1_l
+r3_l_1 <- r3_l
+r12.a <- merge(r1_l_1, r2n_l, by=c("subj", "cond", "roi"))
+r12.a <- merge(r12.a, r3_l_1, by=c("subj", "cond", "roi"))
+
+r12.a <- r12.a %>% dplyr::select(subj, roi, cond, z, b_m, b_s, corrD)
+r12.c <- r12.a %>% filter(cond == "cons")
+r12.i <- r12.a %>% filter(cond == "imm")
+
+
+r12.ss <- merge(r12.c, r12.i, by=c("subj", "roi"))
+r12.ss <- r12.ss %>% 
+  mutate(z = (z.x-z.y),
+         b_m = (b_m.x-b_m.y),
+         b_s = (b_s.x-b_s.y),
+         corrD = (corrD.x-corrD.y),
+         z_a = (z.x+z.y)/2,
+         b_m_a = (b_m.x+b_m.y)/2,
+         b_s_a =(b_s.x+b_s.y)/2,
+         corrD_a = (corrD.x+corrD.y)/2) %>% 
+  dplyr::select(subj, roi, z, b_m, b_s, corrD, z_a, b_m_a, b_s_a, corrD_a)
+
+ROI = c("loc","lloc","rloc", "a_hpp", "p_hpp", "mpfc")
+
+```
+
+<br>
+
+```{r, fig.width = 18, fig.height = 6,  message = FALSE, warning = FALSE, echo = T}
+for (rois in ROI){
+  r123s_data <- r12.ss %>% filter(roi == rois)
+  r123s_data <- r123s_data %>% mutate(z.z = (z - mean(z))/sd(z), 
+                                      z.b_m = (b_m - mean(b_m))/sd(b_m),
+                                      z.corrD = (corrD - mean(corrD))/sd(corrD))
+  # r123s_data <- r123s_data %>% mutate(z.z = z,
+  #                                     z.b_m = b_m,
+  #                                     z.corrD = corrD)
+  
+  cor.z_bm <- cor.test(formula = ~ z + b_m, data = r123s_data,
+                       method = "pearson", alternative = "two.sided")
+  r.z_bm <- cor.z_bm[["estimate"]][["cor"]]
+  r_p.z_bm <- cor.z_bm[["p.value"]]
+  
+  cor.z_corrD <- cor.test(formula = ~ z + corrD, data = r123s_data,
+                          method = "pearson", alternative = "two.sided")
+  r.z_corrD <- cor.z_corrD[["estimate"]][["cor"]]
+  r_p.z_corrD <- cor.z_corrD[["p.value"]]
+  
+  cor.b_m_corrD <- cor.test(formula = ~ b_m + corrD, data = r123s_data,
+                            method = "pearson", alternative = "two.sided")
+  r.bm_corrD <- cor.b_m_corrD[["estimate"]][["cor"]]
+  r_p.bm_corrD <- cor.b_m_corrD[["p.value"]]
+  
+  pcor.z_b_m <- pcor.test(r123s_data$z, r123s_data$b_m, r123s_data$corrD, method = c("pearson"))
+  pr.z_bm <- pcor.z_b_m$estimate 
+  pr_p.z_bm <- pcor.z_b_m$p.value 
+  
+  pcor.z_corrD <- pcor.test(r123s_data$z, r123s_data$corrD, r123s_data$b_m, method = c("pearson"))
+  pr.z_corrD <- pcor.z_corrD$estimate 
+  pr_p.z_corrD <- pcor.z_corrD$p.value 
+  
+  pcor.bm_corrD <- pcor.test(r123s_data$corrD, r123s_data$b_m, r123s_data$z,  method = c("pearson"))
+  pr.bm_corrD <- pcor.bm_corrD$estimate 
+  pr_p.bm_corrD <- pcor.bm_corrD$p.value 
+  
+  assign(sprintf("%s_z_bm_all", rois), 
+         ggplot(r123s_data, aes(x=z.z, y=z.b_m)) +
+           geom_point(size = 4) +
+           geom_smooth(method=lm) +
+           labs(x = sprintf("%s, Activation", rois),
+                y = sprintf("%s, Beta", rois))+
+           # ggtitle(sprintf("ppa-%s bgFC - RG difference (sa-diff)", vrois)) +
+           coord_cartesian(xlim = c(-3,3), ylim = c(-3,4)) +
+           # coord_cartesian(xlim = c(-3,3), ylim = c(-3,3)) +
+           theme_bw(base_size = 15) +
+           theme(axis.title = element_text(face = "bold", size = 16, color = "black"),
+                 axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+                 axis.line=element_line(),
+                 strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+                 strip.background = element_blank(),
+                 panel.grid.major = element_blank(),
+                 panel.grid.minor = element_blank(),
+                 panel.border = element_blank(),
+                 panel.spacing=unit(1, "lines"),
+                 legend.position = c(0.65, 0.85),
+                 legend.title = element_blank(),
+                 aspect.ratio = 1,
+                 legend.background = element_blank(),
+                 plot.margin = margin(1, 0.5, 0.5, 0.7, "cm"),
+                 legend.key = element_blank()) +
+           annotate("text", x=-0.3, y=3,
+                    label=sprintf("r = %0.2f, r_p = %0.3f\npr = %0.2f, pr_p = %0.3f",
+                                  r.z_bm, r_p.z_bm, pr.z_bm, pr_p.z_bm),
+                    fontface="italic", colour="black", size=5))
+  
+  assign(sprintf("%s_z_corrD_all", rois), 
+         ggplot(r123s_data, aes(x=z.z, y=z.corrD)) +
+           geom_point(size = 4) +
+           geom_smooth(method=lm) +
+           labs(x = sprintf("%s, Activation", rois),
+                y = sprintf("%s, Similarity", rois))+
+           # ggtitle(sprintf("ppa-%s bgFC - RG difference (sa-diff)", vrois)) +
+           coord_cartesian(xlim = c(-3,3), ylim = c(-3,4)) +
+           # coord_cartesian(xlim = c(-3,3), ylim = c(-3,3)) +
+           theme_bw(base_size = 15) +
+           theme(axis.title = element_text(face = "bold", size = 16, color = "black"),
+                 axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+                 axis.line=element_line(),
+                 strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+                 strip.background = element_blank(),
+                 panel.grid.major = element_blank(),
+                 panel.grid.minor = element_blank(),
+                 panel.border = element_blank(),
+                 panel.spacing=unit(1, "lines"),
+                 legend.position = c(0.65, 0.85),
+                 legend.title = element_blank(),
+                 aspect.ratio = 1,
+                 legend.background = element_blank(),
+                 plot.margin = margin(1, 0.5, 0.5, 0.7, "cm"),
+                 legend.key = element_blank()) +
+           annotate("text", x=-0.3, y=3,
+                    label=sprintf("r = %0.2f, r_p = %0.3f\npr = %0.2f, pr_p = %0.3f",
+                                  r.z_corrD, r_p.z_corrD, pr.z_corrD, pr_p.z_corrD),
+                    fontface="italic", colour="black", size=5))
+  
+  assign(sprintf("%s_bm_corrD_all", rois), 
+         ggplot(r123s_data, aes(x=z.b_m, y=z.corrD)) +
+           geom_point(size = 4) +
+           geom_smooth(method=lm) +
+           labs(x = sprintf("%s, Beta", rois),
+                y = sprintf("%s, Similarity", rois))+
+           # ggtitle(sprintf("ppa-%s bgFC - RG difference (sa-diff)", vrois)) +
+           coord_cartesian(xlim = c(-3,3), ylim = c(-3,4)) +
+           # coord_cartesian(xlim = c(-3,3), ylim = c(-3,3)) +
+           theme_bw(base_size = 15) +
+           theme(axis.title = element_text(face = "bold", size = 16, color = "black"),
+                 axis.text = element_text(face = "plain", hjust = 0.5, size = 15, color = "black"),
+                 axis.line=element_line(),
+                 strip.text.x = element_text(face = "plain", size = 15, color = "black"),
+                 strip.background = element_blank(),
+                 panel.grid.major = element_blank(),
+                 panel.grid.minor = element_blank(),
+                 panel.border = element_blank(),
+                 panel.spacing=unit(1, "lines"),
+                 legend.position = c(0.65, 0.85),
+                 legend.title = element_blank(),
+                 aspect.ratio = 1,
+                 legend.background = element_blank(),
+                 plot.margin = margin(1, 0.5, 0.5, 0.7, "cm"),
+                 legend.key = element_blank()) + 
+           annotate("text", x=-0.3, y=3,
+                    label=sprintf("r = %0.2f, r_p = %0.3f\npr = %0.2f, pr_p = %0.3f",
+                                  r.bm_corrD, r_p.bm_corrD, pr.bm_corrD, pr_p.bm_corrD),
+                    fontface="italic", colour="black", size=5))
+}
+
+# plot-control 26
+ggarrange(loc_z_bm_all,
+          loc_z_corrD_all,
+          loc_bm_corrD_all, 
+          nrow=1, ncol=3, labels = "Consolidated - Immediated")
+
+# ggarrange(lloc_z_bm_all,
+#           lloc_z_corrD_all,
+#           lloc_bm_corrD_all, 
+#           nrow=1, ncol=3, labels = "Consolidated - Immediated")
+# 
+# ggarrange(rloc_z_bm_all,
+#           rloc_z_corrD_all,
+#           rloc_bm_corrD_all, 
+#           nrow=1, ncol=3, labels = "Consolidated - Immediated")
+# 
+# ggarrange(a_hpp_z_bm_all,
+#           a_hpp_z_corrD_all,
+#           a_hpp_bm_corrD_all, 
+#           nrow=1, ncol=3, labels = "Consolidated - Immediated")
+# 
+# ggarrange(p_hpp_z_bm_all,
+#           p_hpp_z_corrD_all,
+#           p_hpp_bm_corrD_all, 
+#           nrow=1, ncol=3, labels = "Consolidated - Immediated")
+# 
+# ggarrange(mpfc_z_bm_all,
+#           mpfc_z_corrD_all,
+#           mpfc_bm_corrD_all, 
+#           nrow=1, ncol=3, labels = "Consolidated - Immediated")
+```
+
+<br>
+
+***
+
+<br>
+
+### LOC Seed-based Background Functional Connectivity
+
+<br>
+
+Consolidation에 의해 획득된 구조적 지식이 물체의 구조화된 표상을 촉진한다면 구조적 지식의 형성과 관련된 뇌 영역들과 지각 처리 중의 LOC 간의 신경 상호작용을 기대할 수 있다. 이를 검증하기 위해 각 참가자의 LOC를 시드 영역으로 사용하여 전체 뇌 영역에 대한 Seed-based Background Functional Connectivity Analysis를 수행하였다. 분석은 Custom Matlab Code를 통해 수행되었다.
+
+<br>
+
+과제 수행 중의 영역 간 내재적 기능적 연결성을 측정하기 위해 Background Connectivity Approach를 사용하였다. 2nd learning phase에서 획득된 신경 신호에서 두 단계의 Regression Step (Nuisanse model -> Evoked Model)을 수행하여 잡음 및 과제 관련 신호가 제거된 timecourse data를 추출하였다. 이후 LOC seed (radius = 5 voxels, 10 mm)를 설정한 후, LOC seed가 포함된 Lateral Occipital Cortex를 제외하고 전체 뇌 영역에 6mm sphere searchlight (radius = 3 voxels, 6 mm)을 수행하였다. 각 조건에서 LOC seed의 time course와 searclight 영역의 time course 간의 Pearson correlation coefficient를 계산하고, 이를 fihser의 z-transformation으로 z 점수로 변환하였다. 그리고 두 조건 간의 z-socored correlation coefficient의 차이 점수를 계산하였다. 마지막으로 paired-samples t-test를 수행하여 차이 점수가 0보다 큰지 확인하고, 통계적 검정에서 살아남은 10개 이상의 복셀을 군집 영역으로 설정하였다(p < .01, uncorrected).
+
+<br> 
+
+![](/Users/taehoonkim/Desktop/Workspace/git_project/consSTR_R_raw/image/results_bgfc.png)
+![](/Users/taehoonkim/Desktop/Workspace/git_project/consSTR_R_raw/image/bgfc_table.png)
+<br>
+
+ 가설과 일치하게, Consolidated 조건에서는 mPFC, Precunenous 및 Postterior Cingulate Cortex와 같은 Default Mode Network 영역이 LOC seed와 강한 Connectivity를 보였다. 대조적으로 Immediate 조건에서는 LOC seed와 Hippocampus 간의 Connectivity가 관찰되었다.
+ 
+<br>
+ 
+***
+ 
+<br>
+
+
+### Whole-Brain Searchlight Analysis 
+
+<br>
+
+앞선 분석에서의 세 가지 주요 결과는 모두 물체 선택적 시각 영역인 LOC 내에서 관찰되었다. Hippocampus와 mPFC 등 기억 관련 영역에 대한 보충 분석에서 유의미한 효과가 관찰되지 않았으나, 여전히 다른 뇌 영역에서 구조화된 표상의 효과가 관찰될 가능성이 있다. 따라서 전체 뇌 영역에 대한 6 mm sphere searchlight analysis (radius = 3 voxels, 6 mm)를 수행하였다. 분석은 Custom Matlab Code를 통해 수행되었다.
+
+<br>
+
+본 분석의 계산 방법을 활용하여 각 Searchlight에 대해 1) 조건 간 활성화 값의 차이, 2) 조건 간 Beta value의 차이, 3) 조건 간의 표상적 유사성 값의 차이를 추출하였다. 이후 3개의 차이 점수가 0보다 유의하게 큰지 여부를 one-sample t-test로 검증하고, 3개의 통계 검정 모두에서 살아남은 클러스터를 식별하였다 (p < 0.05, uncorrected). 
+
+<br>
+
+![](/Users/taehoonkim/Desktop/Workspace/git_project/consSTR_R_raw/image/results_sl.png)
+
+![](/Users/taehoonkim/Desktop/Workspace/git_project/consSTR_R_raw/image/sl_table.png)
+<br>
+
+분석 결과, Consolidated 조건의 Lateral Occipital Cortex 내의 클러스터 (12 voxels)에서 구조화된 표상의 세 가지 효과가 관찰되었다. 또한 Temporal Occipital Fusiform Cortex와 Lingual Gyrus에서도 유사한 결과가 관찰되었다. Immediate 조건에서는 클러스터가 식별되지 않았다. 
+
+<br>
+
+
