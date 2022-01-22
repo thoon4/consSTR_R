@@ -3454,4 +3454,11 @@ Consolidation에 의해 획득된 구조적 지식이 물체의 구조화된 표
 
 <br>
 
+# Session Info
+
+<br>
+
+```{r, collapse=TRUE}
+sessionInfo()
+```
 
