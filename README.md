@@ -1,5 +1,4 @@
-# Research Project - Memory Consolidation Promotes Structured Representation of Visual Objects
-- Taehoon Kim.
+# Research Project : Memory Consolidation Promotes Structured Representation of Visual Objects
 
 ## Index
   - [Authors](#authors) 
