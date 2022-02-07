@@ -30,6 +30,14 @@ Although objects in our daily experiences have high complexity, we recognize the
 
 Keywords: Structured representation, object recognition, memory consolidation, fMRI
 
+## Files
+- consSTR_Results.Rmd : 데이터 분석을 위한 RMarkDown source code
+- consSTR_Results.html : 분석 코드 및 결과, 다운로드 후 확인 가능
+- KBRI2021.ConsSTR.thk.pdf : KBRI 결과 보고를 위한 포스터
+- KSCBP2021.ConsStr_ppt.thk.pdf : 한국인지및생물심리학회 2021 학술대회 발표 자료
+- data : raw data 폴더, 비어있음
+- image : 결과 보고를 위한 이미지 폴더
+
 
 ## License
 
